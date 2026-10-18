@@ -1,60 +1,28 @@
-# INTERAURA - IROS INT-JP-04
+# INTERAURA — IROS INT-JP-04
 
-Terminal narrativo multiplayer da Interaura. O site público funciona no GitHub Pages; a posse do computador, as ações, o áudio, o terminal e as decisões do mestre são sincronizados pelo Firebase Realtime Database.
+Terminal narrativo preservado a partir de `interaura-iros-github.zip`, com 71 mídias verificadas por SHA-256. Publicação pelo GitHub Pages: a pasta `site/` contém o site completo; os pacotes antigos em `release/` são preservados, mas não participam do deploy.
 
-## Arquivos de publicação
+## Endereços
 
-A pasta `web/` é a versão pronta para hospedagem. O HTML principal foi separado dos arquivos de imagem e áudio porque a versão autônoma ultrapassa o limite de 100 MB por arquivo do GitHub.
+- Jogadores: https://soggypoiuytr.github.io/interaura-iros/
+- Mestre: https://soggypoiuytr.github.io/interaura-iros/master.html
 
-- `web/index.html`: terminal dos jogadores e observadores.
-- `web/master.html`: painel privado do mestre.
-- `web/firebase-config.js`: configuração pública do Firebase.
-- `web/database.rules.json`: regras do Realtime Database.
-- `web/assets/`: imagens, ícones e sons.
+## Firebase compartilhado com a SDAI
 
-## Firebase
+Projeto gratuito `aurality-94f7b`. A SDAI continua em `/rooms`; o IROS usa `/irosRooms/{sala}`. O arquivo `database.rules.json` inclui as regras originais da SDAI e as novas regras do IROS. A conta de mestre já autorizada pode registrar seu próprio UID em `/masters/{uid}: true` durante o login. Outras contas não podem conceder permissão a si mesmas.
 
-1. Crie um projeto no Firebase.
-2. Ative **Authentication > Anonymous** para jogadores e observadores.
-3. Ative **Authentication > Email/Password** e crie a conta do mestre.
-4. Crie um **Realtime Database**.
-5. Copie a configuração do aplicativo Web para `web/firebase-config.js`.
-6. Publique `web/database.rules.json` nas regras do Realtime Database.
-7. No banco, crie `masters/UID_DO_MESTRE = true`, usando o UID da conta do mestre.
+A configuração pública fica em `site/firebase-config.js`. Não há senha administrativa no repositório. Cada aba recebe identidade própria e autenticação em memória. Controle exclusivo é adquirido por transação e renovado por heartbeat a cada 7 segundos; sem renovação, expira após 30 segundos. O mestre pode liberar o controle.
 
-O painel não concede permissões administrativas apenas por conhecer sua URL: confirmações do cabo IIM, aprovações e mensagens customizadas exigem um UID listado em `masters`.
+## Uso
 
-Sem Firebase configurado, o projeto entra automaticamente em modo local para teste entre abas do mesmo navegador, usando `BroadcastChannel` e `localStorage`.
+Cada participante informa player e personagem. Um opera e os demais observam. Ao trocar de operador, a sessão é restaurada do snapshot compartilhado. A credencial narrativa é `A.CHIYOMI` / `SAUDADE-0317-88`; não é a senha real do mestre.
 
-## Fluxo da sessão
+O painel permite confirmar o cabo da IIM, aprovar/recusar solicitações, enviar mensagens e notificações, alterar condições, suspender credenciais e programas, preparar respostas e consultar o histórico de comandos e pesquisas. `KRYTUX` permanece reservado à resposta original do reator.
 
-1. O primeiro jogador informa personagem e player e assume o controle.
-2. Os demais entram como observadores; a interface fica somente leitura, mas ações e sons são reproduzidos.
-3. O controlador liga o computador e autentica Ariella Chiyomi.
-4. O mestre abre `master.html`, conecta virtualmente o cabo físico da IIM e recebe solicitações do terminal.
-5. Ao confirmar o cabo, o ícone da cadeira surge na bandeja, pisca, mostra o balão e toca o som de conexão.
-6. Sem cabo, qualquer comando `IIM` retorna `ERRO IIM-01`.
-7. `IIM CONNECT MOD-07` e comandos de alteração como `OCULAR ACTIVATE` aguardam confirmação do painel.
+A IIM inicia sem cabo. Somente depois da confirmação física pelo painel é possível solicitar `IIM CONNECT MOD-07`. A confirmação e a ativação ocular dependem da aprovação da unidade pelo painel. Para os jogadores, são respostas do sistema.
 
-## Credencial narrativa
+Use `?sala=CODIGO` nas duas páginas para outra sala. Sem o parâmetro, a sala é `int-jp-04`. O modo `?demo=1` é explícito e funciona somente entre abas do mesmo navegador. Falhas do Firebase não concedem acesso administrativo local automaticamente.
 
-- Usuária: `A.CHIYOMI`
-- Senha: `SAUDADE-0317-88`
+## Testes
 
-Essa credencial pertence à narrativa do site e não protege o painel do mestre. A segurança real do painel usa Firebase Authentication e as regras do banco.
-
-## Comando oculto
-
-`KRYTUX` consulta o Reator Aurítico Krytux e recebe uma resposta direta do núcleo inteligente.
-
-## Reconstrução
-
-Na raiz de desenvolvimento:
-
-```bash
-python3 rebuild_interaura.py
-python3 export_interaura_web.py
-```
-
-O primeiro comando atualiza o HTML autônomo. O segundo recria a pasta `web/` pronta para GitHub Pages.
-
+`npm test` verifica integridade, caminhos e caixa dos nomes, sintaxe, preservação das regras da SDAI, autorização do IROS e concorrência em três clientes locais. Os testes de regras simulam expressões; não substituem o Firebase real. A validação no Firebase real está descrita em `VALIDACAO.md`.

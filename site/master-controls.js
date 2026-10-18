@@ -1,0 +1,20 @@
+(function(){
+const rt=window.InterauraRealtime;let settings={};
+function setup(){
+ const host=document.querySelector('#console');
+ host.insertAdjacentHTML('beforeend',`<article class="panel full"><h2>CONDIÇÃO DO IROS</h2><select id="gm-condition"><option>NORMAL</option><option>SUSPEITA</option><option>ALERTA</option><option>BLOQUEIO</option></select><button id="gm-condition-save">APLICAR CONDIÇÃO</button><label><input id="gm-credential-block" type="checkbox" style="width:auto"> SUSPENDER CREDENCIAL NARRATIVA</label><button id="gm-credential-save">APLICAR CREDENCIAL</button></article><article class="panel full"><h2>PROGRAMAS</h2><select id="gm-program"><option value="network">Rede interna</option><option value="files">Arquivos</option><option value="terminal">Terminal</option><option value="surveillance">Vigilância</option><option value="notes">Bloco de notas</option><option value="system">Meu computador</option><option value="mines">Campo minado</option><option value="solitaire">Paciência</option></select><button id="gm-program-block">BLOQUEAR</button><button id="gm-program-allow">LIBERAR</button></article><article class="panel full"><h2>RESPOSTAS DO SISTEMA</h2><label>COMANDO<input id="gm-response-command" maxlength="120"></label><label>RESPOSTA<textarea id="gm-response-text" maxlength="4000"></textarea></label><button id="gm-response-save">DEFINIR RESPOSTA</button><button id="gm-response-remove">REMOVER RESPOSTA</button></article><article class="panel full"><h2>NOTIFICAÇÃO / FALHA / TRANSMISSÃO</h2><select id="gm-notice-kind"><option value="notification">Notificação</option><option value="failure">Falha</option><option value="transmission">Transmissão</option></select><textarea id="gm-notice-text" maxlength="4000"></textarea><button id="gm-notice-send">ENVIAR RESPOSTA DO SISTEMA</button><p id="gm-action-status" role="status"></p></article><article class="panel full"><h2>HISTÓRICO DOS JOGADORES</h2><div id="gm-player-history" class="log"></div></article>`);
+ const $=id=>document.getElementById(id);
+ const action=async fn=>{try{await fn();$('gm-action-status').textContent='ALTERAÇÃO TRANSMITIDA.'}catch(error){$('gm-action-status').textContent='ERRO: '+error.message}};
+ const save=patch=>rt.setState('settings',{...settings,...patch});
+ rt.onState('settings',value=>{settings=value||{};$('gm-condition').value=settings.alert||'NORMAL';$('gm-credential-block').checked=!!settings.credentialsBlocked});
+ rt.onState('history',value=>{const entries=Object.values(value||{}).sort((a,b)=>a.at-b.at).slice(-250);$('gm-player-history').textContent=entries.map(row=>new Date(row.at).toLocaleTimeString()+' // '+row.text).join('\n');$('gm-player-history').style.whiteSpace='pre-wrap';});
+ $('gm-condition-save').onclick=()=>action(()=>save({alert:$('gm-condition').value,blocked:$('gm-condition').value==='BLOQUEIO'}));
+ $('gm-credential-save').onclick=()=>action(()=>save({credentialsBlocked:$('gm-credential-block').checked}));
+ for(const [id,blocked] of [['gm-program-block',true],['gm-program-allow',false]])$(id).onclick=()=>action(()=>save({blockedPrograms:{...settings.blockedPrograms,[$('gm-program').value]:blocked}}));
+ const command=()=> $('gm-response-command').value.trim().toUpperCase().replace(/\s+/g,' ');
+ $('gm-response-save').onclick=()=>action(async()=>{const key=command();if(!key||/[.#$\[\]\/]/.test(key))throw Error('Informe um comando sem . # $ [ ] /');if(/^(KRYTUX|REATOR KRYTUX|KRYTUX REACTOR|IIM(?: |$)|OCULAR(?: |$))/.test(key))throw Error('Comando reservado à IIM ou ao Reator Krytux.');await save({responses:{...settings.responses,[key]:$('gm-response-text').value}})});
+ $('gm-response-remove').onclick=()=>action(()=>{const responses={...settings.responses};delete responses[command()];return save({responses})});
+ $('gm-notice-send').onclick=()=>action(async()=>{const text=$('gm-notice-text').value.trim();if(!text)return;await rt.send('system-notification',{text,kind:$('gm-notice-kind').value});$('gm-notice-text').value=''});
+}
+window.addEventListener('iros-master-ready',setup,{once:true});
+})();

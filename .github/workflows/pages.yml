@@ -18,16 +18,14 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Reconstruir pacote do IROS
-        run: |
-          cat release/interaura-site.part-* > interaura-site.zip
-          mkdir public
-          unzip -q interaura-site.zip -d public
-          rm -rf public/.github public/.git
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: Validar arquivos e mídias
+        run: npm test
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:
-          path: public
+          path: site
       - id: deployment
         uses: actions/deploy-pages@v4
-
