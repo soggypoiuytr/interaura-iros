@@ -2,6 +2,6 @@
   "name": "interaura-iros",
   "private": true,
   "scripts": {
-    "test": "node tests/integrity.cjs && node tests/rules.cjs && node tests/realtime.cjs"
+    "test": "node tests/integrity.cjs && node tests/rules.cjs && node tests/realtime.cjs && node tests/power.cjs"
   }
 }
