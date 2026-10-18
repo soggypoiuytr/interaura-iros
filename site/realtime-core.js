@@ -13,7 +13,7 @@
  db.ref('.info/serverTimeOffset').on('value',s=>offset=s.val()||0);db.ref('.info/connected').on('value',s=>{connected=s.val()===true;notify('connection',connected)});
  db.ref(base+'/events').orderByChild('at').startAt(now()).on('child_added',s=>{const m=s.val();if(m)emit(m.type,m.payload,m)});
  for(const key of stateListeners.keys())subscribe(key);return true;})()}
- function subscribe(key){if(key==='connection')return;db.ref(base+'/state/'+key).on('value',s=>notify(key,s.val()),error=>notify('error',error.message))}
+ function subscribe(key){if(key==='connection'||key==='error')return;db.ref(base+'/state/'+key).on('value',s=>notify(key,s.val()),error=>notify('error',error.message))}
  async function send(type,payload){const event={id:crypto.randomUUID(),type,payload,at:now(),sender:clientId,authUid:auth?.currentUser?.uid||null};seen.add(event.id);if(ready){await db.ref(base+'/events/'+event.id).set(event);return}channel.postMessage({...event,kind:'event'});emit(type,payload,event)}
  async function setState(key,value){if(ready){await db.ref(base+'/state/'+key).set(value);return}const parts=key.split('/'),rootKey=parts.shift();let rootValue=value;if(parts.length){rootValue=await getState(rootKey)||{};let cursor=rootValue;for(const part of parts.slice(0,-1))cursor=cursor[part]||={};if(value===null)delete cursor[parts.at(-1)];else cursor[parts.at(-1)]=value;}localStorage.setItem('interaura_'+room+'_'+rootKey,JSON.stringify(rootValue));notify(rootKey,rootValue);if(parts.length)notify(key,value);channel.postMessage({kind:'state',key:rootKey,value:rootValue})}
  async function getState(key){if(ready)return(await db.ref(base+'/state/'+key).once('value')).val();try{const parts=key.split('/');let value=JSON.parse(localStorage.getItem('interaura_'+room+'_'+parts.shift())||'null');for(const part of parts)value=value?.[part];return value??null}catch{return null}}
@@ -22,7 +22,8 @@
  const renewControl=()=>transaction(c=>c?.clientId===clientId?{...c,heartbeat:now()}:undefined);
  const releaseControl=()=>transaction(c=>c?.clientId===clientId?null:undefined);
  const on=(type,fn)=>{if(!listeners.has(type))listeners.set(type,[]);listeners.get(type).push(fn)};
- const onState=(key,fn)=>{if(!stateListeners.has(key)){stateListeners.set(key,[]);if(ready)subscribe(key)}stateListeners.get(key).push(fn);getState(key).then(fn).catch(e=>notify('error',e.message))};
+ const onState=(key,fn)=>{if(key==='connection'||key==='error'){if(!stateListeners.has(key))stateListeners.set(key,[]);stateListeners.get(key).push(fn);if(key==='connection')fn(connected);return;}if(!stateListeners.has(key)){stateListeners.set(key,[]);if(ready)subscribe(key)}stateListeners.get(key).push(fn);getState(key).then(fn).catch(e=>notify('error',e.message))};
  window.InterauraRealtime={room,clientId,init,send,setState,getState,claimControl,renewControl,releaseControl,on,onState,now,get connected(){return connected},get firebaseReady(){return ready},get db(){return db},get auth(){return auth}};
 })();
+
 
