@@ -185,6 +185,7 @@ body.crt-transition .shell{animation:crt-channel-shift .22s steps(2,end) 1!impor
 .solitaire-system-error.open{display:block;animation:none}.solitaire-system-error .program-error.camera-image-glitch{animation:camera-switch-glitch .43s steps(2,end)}.solitaire-system-error .program-error.error-shudder{animation:program-error-shudder .22s steps(2,end) 2}.solitaire-system-error #solitaire-error-close{position:relative;z-index:5;min-width:92px}
 .desktop-mode .audio-controls{right:6px;top:48px;bottom:auto;z-index:6000;width:34px;min-width:0;height:11px;justify-content:flex-end;gap:0;padding:0;overflow:hidden;opacity:0;border-color:transparent;background:transparent;transform:none;transform-origin:top right;transition:opacity .14s,width .16s,height .16s,padding .16s,background .16s,border-color .16s}.desktop-mode .audio-controls:hover,.desktop-mode .audio-controls:focus-within{width:168px;min-width:168px;height:30px;gap:3px;padding:3px;overflow:visible;opacity:.96;border-color:#263e36;background:rgba(1,7,5,.94);transform:none}.desktop-mode .audio-controls::before{content:"";position:absolute;right:0;top:0;width:34px;height:11px}.desktop-mode .audio-controls:hover::before,.desktop-mode .audio-controls:focus-within::before{display:none}
 @media(max-width:720px){.explorer-summary{grid-template-columns:1fr 1fr}.explorer-search{grid-column:1/-1}.explorer-list-head,.explorer-file{grid-template-columns:minmax(180px,1fr) 84px 72px}.explorer-list-head span:last-child,.explorer-file>span:last-child{display:none}.iros-quick-launch{display:none}}
+.entry-panel{width:min(360px,calc(100vw - 32px));padding:24px}.entry-panel label{margin:0 0 18px;color:#c9dfd6}.entry-panel>button{width:100%;margin-top:4px;padding:11px}.entry-panel [role=status]:not([hidden]){margin-top:14px;color:#e2b6a7;font-size:11px}.control-gate.enter-glitch{pointer-events:none;animation:entry-glitch .6s steps(1) both}.enter-glitch::after{content:"";position:absolute;inset:0;background:repeating-linear-gradient(0deg,transparent 0 7px,#aaffcf22 8px 10px);mix-blend-mode:screen;pointer-events:none}.shutdown-screen{z-index:90000}.shutdown-screen[hidden]{display:none}.shutdown-screen #shutdown-label{font-size:clamp(.8rem,1.6vw,1.1rem);letter-spacing:.18em;margin:1.3em 0 0;animation:shutdown-pulse 1.6s ease-in-out infinite}.shutdown-screen .startup-splash header p:last-child{max-width:36vw}@keyframes entry-glitch{0%{opacity:1;transform:none}15%{transform:translateX(-9px) skewX(2deg);filter:contrast(2)}24%{opacity:.35;transform:translateX(8px)}34%{opacity:1;transform:translateY(3px)}48%{opacity:.6;transform:skewX(-4deg)}64%{opacity:.95;transform:translateX(-4px)}80%{opacity:.2;transform:translateX(5px)}100%{opacity:0;transform:none}}@keyframes shutdown-pulse{50%{opacity:.55}}@media(prefers-reduced-motion:reduce){.control-gate.enter-glitch{animation:entry-glitch .15s steps(1) both}.shutdown-screen #shutdown-label{animation:none}}
 </style>
 <style>
 .terminal-window.iim-active{border-color:#91c8b7;box-shadow:0 0 0 2px #18382f,inset 0 0 34px rgba(48,152,120,.13);background:radial-gradient(circle at 50% 12%,#071c16 0,#000 58%)}
@@ -205,16 +206,12 @@ body.crt-transition .shell{animation:crt-channel-shift .22s steps(2,end) 1!impor
 </head>
 <body class="startup-active">
   <div class="scanlines" aria-hidden="true"></div>
-  <section id="control-gate" class="control-gate" aria-labelledby="control-gate-title">
-    <form id="control-claim-form" class="control-gate-panel">
-      <p class="eyebrow">INT-JP-04 // CONTROLE REMOTO COMPARTILHADO</p>
-      <h1 id="control-gate-title">ENTRAR NA SESSÃO</h1>
-      <p>Todos podem interagir. Janelas e rolagem são individuais; comandos e eventos do computador são compartilhados.</p>
-      <div id="control-gate-status" class="control-gate-status">CONSULTANDO ESTAÇÃO REMOTA...</div>
-      <label>NOME DO PERSONAGEM<input id="control-character" maxlength="40" autocomplete="off" required></label>
-      <label>NOME DO PLAYER<input id="control-player" maxlength="40" autocomplete="off" required></label>
-      <div class="control-gate-actions"><button type="submit" disabled>[ ENTRAR ]</button></div>
-      <small>Informe seu player e personagem. Este clique também libera o áudio neste navegador.</small>
+  <section id="control-gate" class="control-gate" aria-label="Identificação da sessão">
+    <form id="control-claim-form" class="control-gate-panel entry-panel">
+      <label>Nome de player<input id="control-player" maxlength="40" autocomplete="off" required></label>
+      <label>Nome de personagem<input id="control-character" maxlength="40" autocomplete="off" required></label>
+      <button type="submit" disabled>ENTRAR</button>
+      <div id="control-gate-status" role="status" hidden></div>
     </form>
   </section>
   <div id="observer-lock" class="observer-lock" hidden>OBSERVAÇÃO REMOTA // CONTROLE: AGUARDANDO</div>
@@ -294,6 +291,25 @@ body.crt-transition .shell{animation:crt-channel-shift .22s steps(2,end) 1!impor
       <p id="boot-percent" class="boot-percent">08% // INICIANDO SESSÃO</p>
     </div>
   </section>
+  <section id="shutdown-screen" class="shutdown-screen startup-screen" aria-label="Desligamento do IROS" aria-live="polite" hidden>
+    <div class="startup-splash active">
+      <header><p>DIVISÃO DE SISTEMAS INTERAURA<br>IROS 3.7.12<br>COPYRIGHT (C) 1999 INTERAURA<br>TODOS OS DIREITOS RESERVADOS.</p><p>SISTEMA PROPRIETÁRIO<br>ACESSO NÃO AUTORIZADO<br>ENCERRANDO SESSÃO COM SEGURANÇA.</p></header>
+      <div class="iros-identity">
+        <img src="assets/embedded/d2617c314a3c3727.png" alt="Símbolo da Interaura">
+        <h1>INTERAURA</h1>
+        <p>SISTEMA OPERACIONAL DE PESQUISA</p>
+        <strong>IROS 3.7.12</strong><p id="shutdown-label">Desligando...</p>
+      </div>
+      <div id="shutdown-steps" class="iros-steps">
+        <p>ENCERRANDO INTERFACE DE AUTENTICAÇÃO <i>[ .. ]</i></p>
+        <p>DESCONECTANDO AMBIENTE DE PESQUISA <i>[ .. ]</i></p>
+        <p>DESMONTANDO VOLUMES DO SISTEMA <i>[ .. ]</i></p>
+        <p>FINALIZANDO MÓDULOS DO SISTEMA <i>[ .. ]</i></p>
+        <p>DESLIGANDO NÚCLEO <i>[ .. ]</i></p>
+      </div>
+    </div>
+  </section>
+  <audio id="shutdown-audio" src="assets/audio/windows-nt4-shutdown.mp3" preload="auto"></audio>
   <audio id="login-success-audio" src="assets/embedded/f324a923073d5d7c.ogg" preload="auto"></audio>
   <audio id="power-on-audio" src="assets/embedded/8ef8f5b2962cf2a5.mp3" preload="auto"></audio>
   <audio id="iros-startup-audio" src="assets/embedded/586ac28c4bd557fa.mp3" preload="auto"></audio>
@@ -1312,10 +1328,10 @@ document.querySelectorAll('[data-system-tab]').forEach(button=>button.addEventLi
 loadIrosNotes();refreshTaskButtons();
 
 </script>
-<script src="firebase-config.js?rev=20261018-free"></script>
-<script src="realtime-core.js?rev=20261018-free"></script>
-<script src="shared-session.js?rev=20261018-free"></script><script src="online-sync.js?rev=20261018-free"></script>
-<script src="session-controls.js?rev=20261018-free"></script>
+<script src="firebase-config.js?rev=20261018-shutdown"></script>
+<script src="realtime-core.js?rev=20261018-shutdown"></script>
+<script src="shared-session.js?rev=20261018-shutdown"></script><script src="online-sync.js?rev=20261018-shutdown"></script>
+<script src="session-controls.js?rev=20261018-shutdown"></script>
 </body>
 </html>
 

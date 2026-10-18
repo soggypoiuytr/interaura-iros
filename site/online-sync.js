@@ -5,9 +5,9 @@
  let entered=false,settings={},session=null,cable=false,lastEpoch=null,lastPhase='',rendered=new Set(),ready=false;
  let noteBaseline={},lastNotes='';
  let identity;try{identity=JSON.parse(sessionStorage.getItem('iros_identity')||'null')}catch{}
- const canInteract=()=>entered&&rt.connected&&!settings.blocked&&!settings.credentialsBlocked;
+ const canInteract=()=>entered&&rt.connected&&phase()!=='shutdown'&&!settings.blocked&&!settings.credentialsBlocked;
  window.IROSTable={isController:canInteract,isApplying:()=>false,refresh:()=>{},get settings(){return settings}};
- const fail=error=>{status.textContent='NÃO FOI POSSÍVEL SINCRONIZAR // '+error.message;label.hidden=false;label.textContent=status.textContent;};
+ const fail=error=>{status.hidden=false;status.textContent='NÃO FOI POSSÍVEL SINCRONIZAR // '+error.message;label.hidden=false;label.textContent=status.textContent;};
  function evaluate(command,s){
   const previous={...iimState},recover=terminalRecoverAttempts;
   try{Object.assign(iimState,{mode:s.iim.mode,module:s.iim.mode?'07':null,ocularActive:s.iim.ocular,connecting:false});terminalRecoverAttempts=Math.max(0,s.recover-1);return terminalAnswer(command)}
@@ -19,9 +19,9 @@
   try{return await rt.transact('session',s=>model.reduce(s,op,evaluate))}catch(error){fail(error);throw error}
  }
  function clean(html){const t=document.createElement('template');t.innerHTML=html||'';t.content.querySelectorAll('script,iframe,object,embed,style,link,audio,video').forEach(n=>n.remove());for(const el of t.content.querySelectorAll('*'))for(const a of [...el.attributes])if(a.name.startsWith('on')||a.name==='srcdoc'||/^(?:javascript|data):/i.test(a.value))el.removeAttribute(a.name);t.content.querySelectorAll('.terminal-response').forEach(n=>n.dataset.revealed='true');return t.content;}
- function phase(){const p=session?.power;if(!p||p.mode==='off')return'off';const age=rt.now()-p.at;if(age<p.postMs)return'post';if(age<p.postMs+p.splashMs+420)return'splash';if(!p.loginAt)return'login';return rt.now()<p.loginAt+4000?'boot':'desktop';}
+ function phase(){const p=session?.power;if(p?.shutdownAt&&rt.now()<p.shutdownAt+p.shutdownMs)return'shutdown';if(!p||p.mode==='off')return'off';const age=rt.now()-p.at;if(age<p.postMs)return'post';if(age<p.postMs+p.splashMs+420)return'splash';if(!p.loginAt)return'login';return rt.now()<p.loginAt+4000?'boot':'desktop';}
  function reset(){
-  stopAllAudio();computerPoweredOn=false;interfaceSoundsReady=false;ambienceEligible=false;booting=false;
+  stopAllAudio();shutdownAudio.pause();computerPoweredOn=false;interfaceSoundsReady=false;ambienceEligible=false;booting=false;
   $('startup-screen').classList.remove('finished');$('power-prompt').classList.remove('hidden');$('startup-post').classList.remove('active');$('startup-splash').classList.remove('active');
   document.body.classList.remove('desktop-mode');document.body.classList.add('startup-active');$('iros-desktop').classList.remove('active');$('iros-desktop').setAttribute('aria-hidden','true');
   loginScreen.classList.remove('authenticated','hidden');loginScreen.classList.add('startup-wait');bootScreen.classList.remove('active','complete');
@@ -30,11 +30,14 @@
   try{sessionStorage.removeItem('interaura_auth')}catch{}
   out.replaceChildren();rendered.clear();lastPhase='';
  }
- const tracks=[powerOnAudio,irosStartupAudio,loginAudio,jingleAudio,interfaceAudio,computerLoopAudio];
+ const shutdownAudio=$('shutdown-audio');
+ const tracks=[shutdownAudio,powerOnAudio,irosStartupAudio,loginAudio,jingleAudio,interfaceAudio,computerLoopAudio];
  function musicTick(force=false){
   if(!entered)return;
   const p=session?.power,stage=phase();let audio=null,at=0,volume=.5;
-  if(p&&stage==='post'){audio=powerOnAudio;at=p.at;volume=.82;}
+  if(p&&stage==='shutdown'){audio=shutdownAudio;at=p.shutdownAt;volume=.78;}
+  else if(p&&stage==='boot'){audio=powerOnAudio;const duration=Number.isFinite(powerOnAudio.duration)?powerOnAudio.duration:(p.postMs||7600)/1000;const offset=Math.min(duration*.46,duration-.5);at=p.loginAt-offset*1000;volume=.28;}
+  else if(p&&stage==='post'){audio=powerOnAudio;at=p.at;volume=.82;}
   else if(p&&stage==='splash'){audio=irosStartupAudio;at=p.at+p.postMs;volume=.78;}
   else if(p&&stage==='login'){audio=loginAudio;at=p.at+p.postMs+p.splashMs+420;volume=.58;}
   else if(p&&stage==='desktop'){
@@ -45,9 +48,10 @@
   if(!audioEnabled)audio=null;
   for(const track of tracks)if(track!==audio&&!track.paused)track.pause();
   if(!audio)return;applyAudioVolume(audio,volume);
-  if(Number.isFinite(audio.duration)&&audio.duration>0){let position=Math.max(0,(rt.now()-at)/1000);if(audio.loop)position%=audio.duration;if(position>=audio.duration){audio.pause();return}if(force||Math.abs(audio.currentTime-position)>.45)audio.currentTime=position;}
+  let position=Math.max(0,(rt.now()-at)/1000);if(Number.isFinite(audio.duration)&&audio.duration>0){if(audio.loop)position%=audio.duration;if(position>=audio.duration){audio.pause();return}}if(force||Math.abs(audio.currentTime-position)>.45){try{audio.currentTime=position}catch{}}
   if(audio.paused)audio.play().catch(()=>{});
  }
+ for(const audio of tracks)audio.addEventListener('loadedmetadata',()=>musicTick(true));
  function tick(){
   if(!entered||!session)return;
   const p=session.power,stage=phase();
@@ -55,11 +59,13 @@
   if(stage!==lastPhase){
    lastPhase=stage;computerPoweredOn=stage!=='off';
    $('power-prompt').classList.toggle('hidden',stage!=='off');$('startup-post').classList.toggle('active',stage==='post');$('startup-splash').classList.toggle('active',stage==='splash');$('startup-splash').setAttribute('aria-hidden',String(stage!=='splash'));
-   const startup=['off','post','splash'].includes(stage);$('startup-screen').classList.toggle('finished',!startup);document.body.classList.toggle('startup-active',startup);loginScreen.classList.toggle('startup-wait',startup);
+   $('shutdown-screen').hidden=stage!=='shutdown';
+   const startup=['off','post','splash','shutdown'].includes(stage);$('startup-screen').classList.toggle('finished',!startup);document.body.classList.toggle('startup-active',startup);loginScreen.classList.toggle('startup-wait',startup);
    if(stage==='boot'){window.IROSLocalCue?.(loginSuccessAudio,.82);loginScreen.classList.add('authenticated');bootScreen.classList.add('active');bootScreen.setAttribute('aria-hidden','false');}
    if(stage==='desktop'){unlock(false);interfaceSoundsReady=true;bootScreen.classList.remove('active');bootScreen.setAttribute('aria-hidden','true');}
    musicTick(true);
   }
+  if(stage==='shutdown'){const progress=Math.min(1,Math.max(0,(rt.now()-p.shutdownAt)/p.shutdownMs));$('shutdown-label').textContent=p.mode==='off'?'Desligando...':'Reiniciando...';document.querySelectorAll('#shutdown-steps p').forEach((el,i,rows)=>{el.classList.toggle('visible',progress>.04+i*.7/rows.length);el.querySelector('i').textContent=progress>.18+i*.7/rows.length?'[ OK ]':'[ .. ]';});}
   if(stage==='post'){const progress=(rt.now()-p.at)/p.postMs;document.querySelectorAll('#post-lines p').forEach((el,i,all)=>el.classList.toggle('visible',progress>.08+i*.72/all.length));$('post-command').classList.toggle('visible',progress>.82);}
   if(stage==='splash')document.querySelectorAll('#iros-steps p').forEach((el,i,all)=>el.classList.toggle('visible',rt.now()-p.at-p.postMs>350+i*p.splashMs*.68/all.length));
   if(stage==='boot'){const progress=Math.min(100,Math.floor((rt.now()-p.loginAt)/40));$('boot-progress-bar').style.width=progress+'%';$('boot-percent').textContent=progress+'% // RECONSTRUINDO SESSÃO';document.querySelectorAll('#boot-log p').forEach(el=>el.classList.add('visible'));}
@@ -84,7 +90,7 @@
  rt.onState('iimCable',value=>{const changed=cable!==!!value?.connected;cable=!!value?.connected;window.interauraCableConnected=cable;const icon=$('iros-iim-link');icon?.classList.toggle('connected',cable);if(changed&&cable&&entered&&phase()==='desktop'){icon?.classList.add('announcing');setTimeout(()=>icon?.classList.remove('announcing'),6500);window.IROSLocalCue?.($('iim-connected-audio'),.62);}if(!cable){Object.assign(iimState,{mode:false,module:null,ocularActive:false});setIimInterface(false);}});
  form.querySelector('button[type=submit]').disabled=false;status.textContent='SESSÃO DISPONÍVEL // INTERAÇÃO LIVRE';
  if(identity){$('control-player').value=identity.playerName||'';$('control-character').value=identity.characterName||'';}
- form.addEventListener('submit',e=>{e.preventDefault();e.stopPropagation();identity={characterName:$('control-character').value.trim(),playerName:$('control-player').value.trim()};if(!identity.characterName||!identity.playerName)return;sessionStorage.setItem('iros_identity',JSON.stringify(identity));entered=true;gate.hidden=true;label.hidden=false;label.textContent='SESSÃO COMPARTILHADA // INTERAÇÃO LIVRE';const cue=$('confirm-audio');cue.volume=0;cue.play().then(()=>{cue.pause();cue.currentTime=0}).catch(()=>{});tick();musicTick(true);presence();});
+ form.addEventListener('submit',e=>{e.preventDefault();e.stopPropagation();if(entered)return;identity={characterName:$('control-character').value.trim(),playerName:$('control-player').value.trim()};if(!identity.characterName||!identity.playerName)return;sessionStorage.setItem('iros_identity',JSON.stringify(identity));entered=true;gate.classList.add('enter-glitch');gate.setAttribute('aria-busy','true');setTimeout(()=>{gate.hidden=true;gate.setAttribute('aria-busy','false')},window.matchMedia('(prefers-reduced-motion: reduce)').matches?150:600);label.hidden=false;label.textContent='SESSÃO COMPARTILHADA // INTERAÇÃO LIVRE';const cue=$('confirm-audio');cue.volume=0;cue.play().then(()=>{cue.pause();cue.currentTime=0}).catch(()=>{});tick();musicTick(true);presence();});
  function presence(){if(entered)rt.setState('participants/'+rt.clientId,{...identity,authUid:rt.auth?.currentUser?.uid||null,at:rt.now()}).catch(fail);}
  setInterval(presence,15000);
  const localPersist=persistIrosNotes;persistIrosNotes=function(){localPersist();if(!canInteract())return;const local=Object.fromEntries(irosNotes.map(n=>[n.id,n])),patch={};for(const [id,note] of Object.entries(local))if(JSON.stringify(note)!==JSON.stringify(noteBaseline[id]))patch[id]=note;for(const id of Object.keys(noteBaseline))if(!local[id])patch[id]=null;if(Object.keys(patch).length)act('notes',{patch}).then(()=>noteStatus.textContent='SALVO // SESSÃO COMPARTILHADA').catch(()=>noteStatus.textContent='FALHA DE SINCRONIZAÇÃO // CÓPIA LOCAL PRESERVADA');};
@@ -93,7 +99,7 @@
   const button=e.target.closest('#power-button,[data-power]');if(!button)return;e.preventDefault();e.stopImmediatePropagation();if(!canInteract())return;
   const kind=button.dataset.power||'on';if(kind!=='on'&&!await confirmPower(kind))return;
   const ms=(a,f)=>Number.isFinite(a.duration)&&a.duration>1?Math.round(a.duration*1000):f;
-  act(kind,{postMs:ms(powerOnAudio,7600),splashMs:ms(irosStartupAudio,5200)}).catch(()=>{});
+  act(kind,{postMs:ms(powerOnAudio,7600),splashMs:ms(irosStartupAudio,5200),shutdownMs:ms(shutdownAudio,5800)+700}).catch(()=>{});
  },true);
  document.addEventListener('submit',e=>{
   if(e.target!==$('terminal-form')&&e.target!==$('login-form'))return;e.preventDefault();e.stopImmediatePropagation();if(!canInteract())return;
@@ -110,4 +116,4 @@
  document.addEventListener('pointerdown',()=>musicTick(),{passive:true});document.addEventListener('visibilitychange',()=>{if(!document.hidden){tick();musicTick(true)}});
  document.addEventListener('click',e=>{if(!canInteract())return;const target=e.target.closest('[data-open-app],.archive-row,[data-view-link]');if(target)rt.setState('history/'+crypto.randomUUID(),{at:rt.now(),text:('ACESSO: '+(target.dataset.file||target.dataset.openApp||target.textContent.trim())).slice(0,500)}).catch(()=>{});},true);
  setInterval(tick,200);setInterval(musicTick,2000);
-})().catch(error=>{document.querySelector('#control-gate-status').textContent='CONEXÃO NÃO DISPONÍVEL // '+error.message;console.error('IROS',error)});
+})().catch(error=>{document.querySelector('#control-gate-status').hidden=false;document.querySelector('#control-gate-status').textContent='CONEXÃO NÃO DISPONÍVEL // '+error.message;console.error('IROS',error)});

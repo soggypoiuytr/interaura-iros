@@ -282,5 +282,9 @@
   "assets/icons/iim-chair-iros.png": {
     "bytes": 8161,
     "sha256": "41d20dc50483ebc7bc005d0b6cb84baeabc8e55c1680625eb1e81c4c84dc19de"
+  },
+  "assets/audio/windows-nt4-shutdown.mp3": {
+    "bytes": 248938,
+    "sha256": "3bd9954819dad6829d7f9fc8a9c697d79a98c8cdc2204126a28257e7b8916a4f"
   }
 }
