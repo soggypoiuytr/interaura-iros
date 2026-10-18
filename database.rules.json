@@ -46,29 +46,30 @@
             "at"
           ],
           "$event": {
-            ".write": "!data.exists() && (auth != null && root.child('masters').child(auth.uid).val() === true || (auth != null && root.child('irosRooms').child($room).child('state').child('control').child('authUid').val() === auth.uid && root.child('irosRooms').child($room).child('state').child('control').child('heartbeat').val() > now - 30000 && (newData.child('type').val() === 'ui' || newData.child('type').val() === 'sound' || newData.child('type').val() === 'session')))",
-            ".validate": "newData.hasChildren(['id','type','at','sender','authUid']) && newData.child('authUid').val() === auth.uid && newData.child('at').isNumber() && newData.child('at').val() <= now + 10000 && newData.child('at').val() >= now - 60000"
+            ".write": "!data.exists() && (auth != null && root.child('masters').child(auth.uid).val() === true)",
+            ".validate": "newData.hasChildren(['id','type','at','sender','authUid']) && newData.child('authUid').val() === auth.uid"
           }
         },
         "state": {
-          "control": {
+          "session": {
             ".read": "auth != null",
-            ".write": "auth != null && ((!newData.exists() && (data.child('authUid').val() === auth.uid || (auth != null && root.child('masters').child(auth.uid).val() === true))) || (newData.exists() && newData.child('authUid').val() === auth.uid && (!data.exists() || data.child('heartbeat').val() < now - 30000 || (data.child('authUid').val() === auth.uid && data.child('clientId').val() === newData.child('clientId').val()))))",
-            ".validate": "newData.hasChildren(['authUid','clientId','playerName','characterName','heartbeat']) && newData.child('heartbeat').isNumber() && newData.child('heartbeat').val() > now - 10000 && newData.child('heartbeat').val() <= now + 10000 && newData.child('playerName').isString() && newData.child('playerName').val().length <= 80 && newData.child('characterName').isString() && newData.child('characterName').val().length <= 80"
+            ".write": "(auth != null && root.child('masters').child(auth.uid).val() === true) || (auth != null && root.child('irosRooms').child($room).child('state').child('settings').child('blocked').val() !== true && root.child('irosRooms').child($room).child('state').child('settings').child('credentialsBlocked').val() !== true)",
+            ".validate": "newData.hasChildren(['version','seq','power','iim']) && newData.child('version').val() === 2 && newData.child('seq').isNumber()",
+            "iim": {
+              ".validate": "(auth != null && root.child('masters').child(auth.uid).val() === true) || ((newData.child('mode').val() !== true || data.child('mode').val() === true) && (newData.child('ocular').val() !== true || data.child('ocular').val() === true))"
+            },
+            "request": {
+              ".validate": "(auth != null && root.child('masters').child(auth.uid).val() === true) || (newData.child('status').val() === 'pending' && (!data.exists() || data.child('status').val() !== 'pending' || newData.child('id').val() === data.child('id').val())) || (newData.child('id').val() === data.child('id').val() && newData.child('status').val() === data.child('status').val() && newData.child('command').val() === data.child('command').val())"
+            }
           },
-          "snapshot": {
+          "participants": {
             ".read": "auth != null",
-            ".write": "auth != null && root.child('irosRooms').child($room).child('state').child('control').child('authUid').val() === auth.uid && root.child('irosRooms').child($room).child('state').child('control').child('heartbeat').val() > now - 30000"
+            "$client": {
+              ".write": "auth != null && (!data.exists() || data.child('authUid').val() === auth.uid) && newData.child('authUid').val() === auth.uid",
+              ".validate": "newData.hasChildren(['authUid','characterName','playerName','at']) && newData.child('at').isNumber() && newData.child('at').val() <= now + 10000 && newData.child('at').val() >= now - 60000 && newData.child('characterName').isString() && newData.child('characterName').val().length <= 80 && newData.child('playerName').isString() && newData.child('playerName').val().length <= 80"
+            }
           },
           "iimCable": {
-            ".read": "auth != null",
-            ".write": "auth != null && root.child('masters').child(auth.uid).val() === true"
-          },
-          "iimRequest": {
-            ".read": "auth != null",
-            ".write": "(auth != null && root.child('irosRooms').child($room).child('state').child('control').child('authUid').val() === auth.uid && root.child('irosRooms').child($room).child('state').child('control').child('heartbeat').val() > now - 30000) || (auth != null && root.child('masters').child(auth.uid).val() === true)"
-          },
-          "iimApproval": {
             ".read": "auth != null",
             ".write": "auth != null && root.child('masters').child(auth.uid).val() === true"
           },
@@ -79,7 +80,7 @@
           "history": {
             ".read": "auth != null && root.child('masters').child(auth.uid).val() === true",
             "$entry": {
-              ".write": "!data.exists() && (auth != null && root.child('irosRooms').child($room).child('state').child('control').child('authUid').val() === auth.uid && root.child('irosRooms').child($room).child('state').child('control').child('heartbeat').val() > now - 30000)",
+              ".write": "!data.exists() && ((auth != null && root.child('masters').child(auth.uid).val() === true) || (auth != null && root.child('irosRooms').child($room).child('state').child('settings').child('blocked').val() !== true && root.child('irosRooms').child($room).child('state').child('settings').child('credentialsBlocked').val() !== true))",
               ".validate": "newData.hasChildren(['at','text']) && newData.child('text').isString() && newData.child('text').val().length <= 500"
             }
           }

@@ -14,7 +14,7 @@ function setup(){
  const command=()=> $('gm-response-command').value.trim().toUpperCase().replace(/\s+/g,' ');
  $('gm-response-save').onclick=()=>action(async()=>{const key=command();if(!key||/[.#$\[\]\/]/.test(key))throw Error('Informe um comando sem . # $ [ ] /');if(/^(KRYTUX|REATOR KRYTUX|KRYTUX REACTOR|IIM(?: |$)|OCULAR(?: |$))/.test(key))throw Error('Comando reservado à IIM ou ao Reator Krytux.');await save({responses:{...settings.responses,[key]:$('gm-response-text').value}})});
  $('gm-response-remove').onclick=()=>action(()=>{const responses={...settings.responses};delete responses[command()];return save({responses})});
- $('gm-notice-send').onclick=()=>action(async()=>{const text=$('gm-notice-text').value.trim();if(!text)return;await rt.send('system-notification',{text,kind:$('gm-notice-kind').value});$('gm-notice-text').value=''});
+ $('gm-notice-send').onclick=()=>action(async()=>{const text=$('gm-notice-text').value.trim();if(!text)return;const op={kind:'message',notice:true,id:crypto.randomUUID(),at:rt.now(),text,type:$('gm-notice-kind').value==='failure'?'error':'secret'};await rt.transact('session',s=>IROSSharedSession.reduce(s,op));$('gm-notice-text').value=''});
 }
 window.addEventListener('iros-master-ready',setup,{once:true});
 })();

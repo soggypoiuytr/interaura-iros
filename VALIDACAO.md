@@ -1,3 +1,5 @@
 # Validação do projeto
 
-O projeto conta com verificações de integridade das mídias, caminhos, sintaxe, sincronização e permissões. Os detalhes narrativos e o roteiro de testes estão preservados na cópia local do proprietário.
+O projeto verifica integridade das mídias, caminhos, sintaxe, comandos concorrentes, reinício, desligamento e permissões. A navegação e a rolagem são individuais; os eventos do computador são compartilhados.
+
+Os testes de navegador também devem conferir duas sessões de jogadores e o painel administrativo no Firebase real. Detalhes narrativos ficam na documentação local do proprietário.

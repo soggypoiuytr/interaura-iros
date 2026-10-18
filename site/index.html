@@ -208,20 +208,20 @@ body.crt-transition .shell{animation:crt-channel-shift .22s steps(2,end) 1!impor
   <section id="control-gate" class="control-gate" aria-labelledby="control-gate-title">
     <form id="control-claim-form" class="control-gate-panel">
       <p class="eyebrow">INT-JP-04 // CONTROLE REMOTO COMPARTILHADO</p>
-      <h1 id="control-gate-title">SELEÇÃO DO OPERADOR</h1>
-      <p>Somente um jogador pode controlar o computador. Os demais acompanham a mesma tela e escutam os mesmos eventos do sistema.</p>
+      <h1 id="control-gate-title">ENTRAR NA SESSÃO</h1>
+      <p>Todos podem interagir. Janelas e rolagem são individuais; comandos e eventos do computador são compartilhados.</p>
       <div id="control-gate-status" class="control-gate-status">CONSULTANDO ESTAÇÃO REMOTA...</div>
       <label>NOME DO PERSONAGEM<input id="control-character" maxlength="40" autocomplete="off" required></label>
       <label>NOME DO PLAYER<input id="control-player" maxlength="40" autocomplete="off" required></label>
-      <div class="control-gate-actions"><button type="submit" disabled>[ ASSUMIR CONTROLE ]</button><button id="control-observe" type="button" disabled>[ APENAS OBSERVAR ]</button></div>
-      <small>A sessão de observação é somente leitura. O áudio precisa ser liberado por este clique inicial devido às restrições do navegador.</small>
+      <div class="control-gate-actions"><button type="submit" disabled>[ ENTRAR ]</button></div>
+      <small>Informe seu player e personagem. Este clique também libera o áudio neste navegador.</small>
     </form>
   </section>
   <div id="observer-lock" class="observer-lock" hidden>OBSERVAÇÃO REMOTA // CONTROLE: AGUARDANDO</div>
   <section id="startup-screen" class="startup-screen" aria-label="Inicialização do computador Interaura">
     <div id="power-prompt" class="power-prompt">
       <button id="power-button" type="button">[ LIGAR SISTEMA ]</button>
-      <p>AGUARDANDO O OPERADOR CONFIRMAR [ LIGAR SISTEMA ]</p>
+      <p>AGUARDANDO CONFIRMAÇÃO PARA [ LIGAR SISTEMA ]</p>
       <small>TERMINAL INTERAURA // ESTAÇÃO INT-JP-04</small>
     </div>
     <div id="startup-post" class="startup-post">
@@ -331,7 +331,7 @@ body.crt-transition .shell{animation:crt-channel-shift .22s steps(2,end) 1!impor
       <div class="start-menu-group">ACESSÓRIOS</div>
       <button type="button" data-open-app="mines"><span class="iros-pixel-icon menu-pixel-icon mine"></span>CAMPO MINADO</button>
       <button type="button" data-open-app="solitaire"><span class="iros-pixel-icon menu-pixel-icon solitaire"></span>PACIÊNCIA <small>[ERRO]</small></button>
-      <div class="start-menu-group">SISTEMA</div>
+      <div class="start-menu-group">SISTEMA</div><button type="button" data-power="restart">↻ Reiniciar</button><button type="button" data-power="off">⏻ Desligar</button>
       <button type="button" data-open-app="system"><span class="iros-pixel-icon menu-pixel-icon system"></span>MEU COMPUTADOR</button>
     </div>
     <section id="surveillance-window" class="iros-app-window iros-surveillance-window" data-app-window="surveillance" aria-hidden="true">
@@ -1312,10 +1312,10 @@ document.querySelectorAll('[data-system-tab]').forEach(button=>button.addEventLi
 loadIrosNotes();refreshTaskButtons();
 
 </script>
-<script src="firebase-config.js?rev=20261018-power"></script>
-<script src="realtime-core.js?rev=20261018-power"></script>
-<script src="online-sync.js?rev=20261018-power"></script>
-<script src="session-controls.js?rev=20261018-power"></script>
+<script src="firebase-config.js?rev=20261018-free"></script>
+<script src="realtime-core.js?rev=20261018-free"></script>
+<script src="shared-session.js?rev=20261018-free"></script><script src="online-sync.js?rev=20261018-free"></script>
+<script src="session-controls.js?rev=20261018-free"></script>
 </body>
 </html>
 

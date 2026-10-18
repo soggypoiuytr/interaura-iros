@@ -1,81 +1,113 @@
 (async function(){
-  const rt=window.InterauraRealtime;if(!rt)return;await rt.init();
-  const gate=document.querySelector('#control-gate'),form=document.querySelector('#control-claim-form'),observe=document.querySelector('#control-observe'),status=document.querySelector('#control-gate-status'),observerLabel=document.querySelector('#observer-lock');
-  let pendingIimRequest=null;
-  let role='pending',control=null,applying=false,cableConnected=false,snapshotTimer=null;
-  const byId=id=>document.getElementById(id);
-  let runtimeSettings={};
-  const controller=()=>!runtimeSettings.blocked&&!runtimeSettings.credentialsBlocked&&role==='controller'&&rt.connected&&control?.clientId===rt.clientId&&controlAlive(control);
-  const safeSend=(type,payload)=>rt.send(type,payload).catch(()=>{});
-  rt.onState('connection',value=>{if(value===false){role='observer';observerLabel.hidden=false;observerLabel.textContent='CONEXÃO INTERROMPIDA // CONTROLE SUSPENSO';}});
-  window.IROSTable={isController:controller,isApplying:()=>applying,refresh:scheduleSnapshot,get settings(){return runtimeSettings}};
-  const controlAlive=c=>c&&rt.now()-(c.heartbeat||0)<30000;
-  function updateGate(c){control=c;if(role==='controller'&&c?.clientId!==rt.clientId){role='observer';observerLabel.hidden=false;}if(role==='observer'){observerLabel.hidden=false;observerLabel.textContent='OBSERVAÇÃO // '+(controlAlive(c)?c.characterName:'SEM OPERADOR');if(!controlAlive(c)){gate.hidden=false;}};const alive=controlAlive(c);status.textContent=alive?`EM USO POR ${c.characterName} // PLAYER: ${c.playerName}`:'ESTAÇÃO DISPONÍVEL // NENHUM OPERADOR ATIVO';form.querySelector('button[type="submit"]').disabled=alive&&c.clientId!==rt.clientId}
-  rt.onState('error',message=>{status.textContent='CONEXÃO RECUSADA // '+message;});
-  rt.onState('control',updateGate);
-  rt.onState('settings',value=>{runtimeSettings=value||{};window.dispatchEvent(new CustomEvent('iros-settings',{detail:runtimeSettings}));});
-  const existing=await rt.getState('control');updateGate(existing);observe.disabled=false;
-  function enter(nextRole){role=nextRole;gate.hidden=true;observerLabel.hidden=nextRole!=='observer';if(nextRole==='observer')observerLabel.textContent=`OBSERVAÇÃO REMOTA // CONTROLE: ${control?.characterName||'AGUARDANDO'}`;unlockAudio();if(nextRole==='observer')rt.getState('snapshot').then(applySnapshot);}
-  function unlockAudio(){const a=byId('confirm-audio');if(a){a.volume=0;a.play().then(()=>{a.pause();a.currentTime=0;a.volume=1}).catch(()=>{})}}
-  form.addEventListener('pointerdown',e=>e.stopPropagation(),true);form.addEventListener('keydown',e=>e.stopPropagation(),true);
-  form.addEventListener('submit',async e=>{e.preventDefault();e.stopPropagation();const identity={characterName:byId('control-character').value.trim(),playerName:byId('control-player').value.trim()};if(!identity.characterName||!identity.playerName)return;status.textContent='REQUISITANDO CONTROLE...';const claimed=await rt.claimControl(identity);if(!claimed){updateGate(await rt.getState('control'));return}control=claimed;const saved=await rt.getState('snapshot');if(saved){role='observer';applySnapshot(saved);}enter('controller');scheduleSnapshot();await rt.send('session',{action:'controller-online',identity});/* Power-on requires the operator's explicit button click. */});
-  observe.addEventListener('click',e=>{e.stopPropagation();if(!byId('control-character').value.trim()||!byId('control-player').value.trim()){status.textContent='INFORME PLAYER E PERSONAGEM.';return}enter('observer')});
-  setInterval(async()=>{if(!controller())return;try{await rt.renewControl()}catch{role='observer';observerLabel.hidden=false}},7000);
-  setInterval(()=>{if(control&&!controlAlive(control))updateGate(null)},1000);
-  window.addEventListener('beforeunload',()=>{if(controller())rt.releaseControl().catch(()=>{})});
-
-  document.addEventListener('dblclick',e=>{if(controller()&&!applying&&!blockedTarget(e.target)){const target=e.target.closest('[data-open-app]');if(target){safeSend('ui',{kind:'dblclick',selector:selector(target)});scheduleSnapshot()}}},true);
-  document.addEventListener('change',e=>{if(controller()&&!applying&&!blockedTarget(e.target)){safeSend('ui',{kind:'input',selector:selector(e.target),value:e.target.type==='password'?'•'.repeat(e.target.value.length):e.target.value});scheduleSnapshot()}},true);
-  document.addEventListener('pointerup',()=>{if(controller())scheduleSnapshot()},true);
-  document.addEventListener('scroll',()=>{if(controller())scheduleSnapshot()},true);
-  function selector(el){if(!el||el===document)return'';if(el.id)return'#'+CSS.escape(el.id);const attr=['data-open-app','data-quick-app','data-task-app','data-view','data-view-link','data-window-action'].find(a=>el.hasAttribute?.(a));if(attr)return`${el.tagName.toLowerCase()}[${attr}="${CSS.escape(el.getAttribute(attr))}"]`;const parent=el.parentElement;if(!parent)return'';return selector(parent)+'>'+el.tagName.toLowerCase()+`:nth-child(${[...parent.children].indexOf(el)+1})`}
-  function blockedTarget(target){return target.closest?.('#control-gate,.audio-controls')}
-  document.addEventListener('click',e=>{if(role==='pending'||blockedTarget(e.target))return;if((role==='observer'||runtimeSettings.blocked||runtimeSettings.credentialsBlocked)&&!applying){e.preventDefault();e.stopImmediatePropagation();return}if(controller()&&!applying){const target=e.target.closest('button,a,[data-view-link],.archive-row');if(target){safeSend('ui',{kind:'click',selector:selector(target)});rt.setState('history/'+crypto.randomUUID(),{at:rt.now(),text:('ABRIU: '+(target.textContent||target.getAttribute('aria-label')||'ação')).trim().slice(0,500)}).catch(()=>{});}scheduleSnapshot()}},true);
-  document.addEventListener('input',e=>{if(role==='pending'||blockedTarget(e.target))return;if((role==='observer'||runtimeSettings.blocked||runtimeSettings.credentialsBlocked)&&!applying){e.preventDefault();e.stopImmediatePropagation();return}if(controller()&&!applying&&e.target.matches('input,textarea')){safeSend('ui',{kind:'input',selector:selector(e.target),value:e.target.type==='password'?'•'.repeat(e.target.value.length):e.target.value});scheduleSnapshot()}},true);
-  document.addEventListener('keydown',e=>{if((role==='observer'||runtimeSettings.blocked||runtimeSettings.credentialsBlocked)&&!applying&&!blockedTarget(e.target)&&!['Tab','PageDown','PageUp','ArrowDown','ArrowUp','Home','End'].includes(e.key)){e.preventDefault();e.stopImmediatePropagation();return}if(!controller()||applying||!e.target.matches?.('input,textarea,[contenteditable="true"]')||e.repeat||e.ctrlKey||e.altKey||e.metaKey)return;/* Audio helpers broadcast the exact sound asset once. */},true);
-  document.addEventListener('submit',e=>{if(role==='pending'||e.target===form)return;if((role==='observer'||runtimeSettings.blocked||runtimeSettings.credentialsBlocked)&&!applying){e.preventDefault();e.stopImmediatePropagation();return}if(controller()&&!applying){safeSend('ui',{kind:'submit',selector:selector(e.target)});scheduleSnapshot()}},true);
-  rt.on('ui',msg=>{if(role!=='observer'||!msg)return;let el;try{el=document.querySelector(msg.selector)}catch{return}if(!el)return;applying=true;try{if(msg.kind==='click'&&!(el.type==='submit'&&el.closest('#terminal-form,#login-form')))el.click();if(msg.kind==='dblclick')el.dispatchEvent(new MouseEvent('dblclick',{bubbles:true}));if(msg.kind==='input'){el.value=msg.value;el.dispatchEvent(new Event('input',{bubbles:true}))}/* Form results arrive in the authoritative snapshot. */}finally{setTimeout(()=>applying=false,0)}});
-  rt.on('session',msg=>{if(role==='observer'&&msg?.action==='controller-online')observerLabel.textContent=`OBSERVAÇÃO REMOTA // CONTROLE: ${msg.identity.characterName}`});
-
-  function getSnapshot(){return{at:Date.now(),phase:byId('iros-desktop')?.classList.contains('active')?'desktop':(!byId('login-screen')?.classList.contains('startup-wait')?'login':'startup'),terminal:byId('terminal-output')?.innerHTML||'',iim:{mode:iimState?.mode||false,module:iimState?.module||null,ocular:iimState?.ocularActive||false},login:{user:byId('login-user')?.value||'',mask:byId('login-pass')?.value?.length||0},mainApp:typeof mainWindowApp==='string'?mainWindowApp:'network',open:[...document.querySelectorAll('.iros-app-window.open')].map(x=>({id:x.id,style:x.getAttribute('style')||'',maximized:x.classList.contains('maximized')})),module:{html:byId('module-detail')?.innerHTML||'',hidden:byId('module-detail')?.classList.contains('hidden')!==false},archive:document.querySelector('.archive-row.selected')?.dataset.file||null,commandHistory:typeof terminalHistory!=='undefined'?terminalHistory.slice(-100):[],notes:typeof irosNotes!=='undefined'?irosNotes:[],activeNote:typeof activeNoteId!=='undefined'?activeNoteId:null,fields:[...document.querySelectorAll('#iros-desktop input,#iros-desktop textarea,#iros-desktop select')].filter(el=>!el.closest('.audio-controls')&&el.id).map(el=>({id:el.id,value:el.value,checked:!!el.checked})),scroll:{x:scrollX,y:scrollY,terminal:byId('terminal-output')?.scrollTop||0},view:document.querySelector('.view.active')?.id||'inicio'}}
-  function scheduleSnapshot(){if(!controller())return;clearTimeout(snapshotTimer);snapshotTimer=setTimeout(()=>rt.setState('snapshot',getSnapshot()).catch(error=>{status.textContent='FALHA DE SINCRONIZAÇÃO // '+error.message}),500)}
-  function cleanMarkup(html){const t=document.createElement('template');t.innerHTML=html||'';t.content.querySelectorAll('script,iframe,object,embed,style,link').forEach(n=>n.remove());for(const el of t.content.querySelectorAll('*'))for(const a of [...el.attributes])if(a.name.startsWith('on')||a.name==='srcdoc'||/^(?:javascript|data):/i.test(a.value))el.removeAttribute(a.name);return t.innerHTML;}
-  function applySnapshot(snap){if(role!=='observer'||!snap)return;applying=true;try{if(snap.phase==='login'){computerPoweredOn=true;if(snap.login){byId('login-user').value=snap.login.user;byId('login-pass').value='•'.repeat(Math.min(100,snap.login.mask));}byId('startup-screen')?.classList.add('finished');document.body.classList.remove('startup-active');byId('login-screen').classList.remove('startup-wait');}
-  if(snap.phase==='desktop')computerPoweredOn=true;
-  if(snap.phase==='desktop'&&!byId('iros-desktop').classList.contains('active')){byId('startup-screen')?.remove();byId('login-screen').classList.add('hidden');byId('boot-screen').classList.remove('active');byId('iros-desktop').classList.add('active');byId('iros-desktop').setAttribute('aria-hidden','false');byId('app-content').classList.remove('app-locked');document.body.classList.add('desktop-mode');document.body.classList.remove('startup-active');try{interfaceSoundsReady=true}catch{}}
-  if(snap.phase==='desktop'){configureMainWindow(snap.mainApp||'network');switchView(snap.view||'inicio');const open=new Map((snap.open||[]).map(x=>typeof x==='string'?[x,{id:x}]:[x.id,x]));for(const win of document.querySelectorAll('.iros-app-window')){const v=open.get(win.id);win.classList.toggle('open',!!v);win.classList.toggle('maximized',!!v?.maximized);win.classList.remove('minimized');win.setAttribute('aria-hidden',String(!v));if(v?.style)win.setAttribute('style',v.style)}refreshTaskButtons();}
-  if(snap.terminal!==undefined)byId('terminal-output').innerHTML=cleanMarkup(snap.terminal);
-  if(snap.module&&byId('module-detail')){const detail=byId('module-detail');detail.innerHTML=cleanMarkup(typeof snap.module==='string'?snap.module:snap.module.html);detail.classList.toggle('hidden',typeof snap.module==='string'?!snap.module:snap.module.hidden);}
-  if(snap.archive){const row=[...document.querySelectorAll('.archive-row')].find(row=>row.dataset.file===snap.archive);if(row&&!row.classList.contains('selected'))openArchiveRow(row);}else byId('archive-reader')?.classList.add('hidden');
-  if(snap.commandHistory&&typeof terminalHistory!=='undefined'){terminalHistory.splice(0,terminalHistory.length,...snap.commandHistory);terminalHistoryIndex=terminalHistory.length;}
-  if(typeof irosNotes!=='undefined'){irosNotes=snap.notes||[];activeNoteId=snap.activeNote;renderIrosNotes();if(activeNoteId)loadActiveNote();}
-  for(const field of snap.fields||[]){const el=byId(field.id);if(el&&!el.closest('.audio-controls')){el.value=field.value;el.checked=field.checked;if(/search|busca|filter/i.test(el.id))el.dispatchEvent(new Event('input',{bubbles:true}))}}
-  if(snap.scroll){scrollTo(snap.scroll.x,snap.scroll.y);byId('terminal-output').scrollTop=snap.scroll.terminal||0;}
-  if(snap.iim){iimState.mode=!!snap.iim.mode;iimState.module=snap.iim.module;iimState.ocularActive=!!snap.iim.ocular;setIimInterface(iimState.mode);}
-  }finally{applying=false}}
-  rt.onState('snapshot',applySnapshot);
-  setInterval(scheduleSnapshot,5000);
-
-  function setCable(connected,announce=false){
-    const changed=cableConnected!==!!connected;cableConnected=!!connected;window.interauraCableConnected=cableConnected;
-    const icon=byId('iros-iim-link');icon?.classList.toggle('connected',cableConnected);
-    document.querySelectorAll('.system-properties b').forEach(b=>{if(b.textContent.trim()==='INTERFACE IIM'){const span=b.parentElement.querySelector('span');if(span){span.textContent=cableConnected?'[ CABO DETECTADO / IIM ENERGIZADA ]':'[ CABO NÃO DETECTADO ]';span.className=cableConnected?'system-state-ok':'system-state-warn'}}});
-    if(changed&&cableConnected&&announce){icon?.classList.add('announcing');setTimeout(()=>icon?.classList.remove('announcing'),6500);playSyncedSound('iim-connected',.62)}
-    if(!cableConnected){if(iimState?.mode)disconnectIim();if(iimState?.connecting){iimState.connecting=false;input.disabled=false;}pendingIimRequest=null;}
+ 'use strict';
+ const rt=window.InterauraRealtime,model=window.IROSSharedSession;if(!rt||!model)return;await rt.init();
+ const $=id=>document.getElementById(id),gate=$('control-gate'),form=$('control-claim-form'),status=$('control-gate-status'),label=$('observer-lock'),out=$('terminal-output');
+ let entered=false,settings={},session=null,cable=false,lastEpoch=null,lastPhase='',rendered=new Set(),ready=false;
+ let noteBaseline={},lastNotes='';
+ let identity;try{identity=JSON.parse(sessionStorage.getItem('iros_identity')||'null')}catch{}
+ const canInteract=()=>entered&&rt.connected&&!settings.blocked&&!settings.credentialsBlocked;
+ window.IROSTable={isController:canInteract,isApplying:()=>false,refresh:()=>{},get settings(){return settings}};
+ const fail=error=>{status.textContent='NÃO FOI POSSÍVEL SINCRONIZAR // '+error.message;label.hidden=false;label.textContent=status.textContent;};
+ function evaluate(command,s){
+  const previous={...iimState},recover=terminalRecoverAttempts;
+  try{Object.assign(iimState,{mode:s.iim.mode,module:s.iim.mode?'07':null,ocularActive:s.iim.ocular,connecting:false});terminalRecoverAttempts=Math.max(0,s.recover-1);return terminalAnswer(command)}
+  finally{Object.assign(iimState,previous);terminalRecoverAttempts=recover;}
+ }
+ async function act(kind,extra={}){
+  if(!canInteract())return;
+  const op={kind,id:crypto.randomUUID(),at:rt.now(),identity,...extra};
+  try{return await rt.transact('session',s=>model.reduce(s,op,evaluate))}catch(error){fail(error);throw error}
+ }
+ function clean(html){const t=document.createElement('template');t.innerHTML=html||'';t.content.querySelectorAll('script,iframe,object,embed,style,link,audio,video').forEach(n=>n.remove());for(const el of t.content.querySelectorAll('*'))for(const a of [...el.attributes])if(a.name.startsWith('on')||a.name==='srcdoc'||/^(?:javascript|data):/i.test(a.value))el.removeAttribute(a.name);t.content.querySelectorAll('.terminal-response').forEach(n=>n.dataset.revealed='true');return t.content;}
+ function phase(){const p=session?.power;if(!p||p.mode==='off')return'off';const age=rt.now()-p.at;if(age<p.postMs)return'post';if(age<p.postMs+p.splashMs+420)return'splash';if(!p.loginAt)return'login';return rt.now()<p.loginAt+4000?'boot':'desktop';}
+ function reset(){
+  stopAllAudio();computerPoweredOn=false;interfaceSoundsReady=false;ambienceEligible=false;booting=false;
+  $('startup-screen').classList.remove('finished');$('power-prompt').classList.remove('hidden');$('startup-post').classList.remove('active');$('startup-splash').classList.remove('active');
+  document.body.classList.remove('desktop-mode');document.body.classList.add('startup-active');$('iros-desktop').classList.remove('active');$('iros-desktop').setAttribute('aria-hidden','true');
+  loginScreen.classList.remove('authenticated','hidden');loginScreen.classList.add('startup-wait');bootScreen.classList.remove('active','complete');
+  for(const el of document.querySelectorAll('.iros-app-window'))el.classList.remove('open','minimized','maximized');
+  $('iros-start-menu').classList.remove('open');document.querySelector('#login-form button[type=submit]').disabled=false;loginError.textContent='';$('login-pass').value='';
+  try{sessionStorage.removeItem('interaura_auth')}catch{}
+  out.replaceChildren();rendered.clear();lastPhase='';
+ }
+ const tracks=[powerOnAudio,irosStartupAudio,loginAudio,jingleAudio,interfaceAudio,computerLoopAudio];
+ function musicTick(force=false){
+  if(!entered)return;
+  const p=session?.power,stage=phase();let audio=null,at=0,volume=.5;
+  if(p&&stage==='post'){audio=powerOnAudio;at=p.at;volume=.82;}
+  else if(p&&stage==='splash'){audio=irosStartupAudio;at=p.at+p.postMs;volume=.78;}
+  else if(p&&stage==='login'){audio=loginAudio;at=p.at+p.postMs+p.splashMs+420;volume=.58;}
+  else if(p&&stage==='desktop'){
+   const start=p.loginAt+4000,duration=Number.isFinite(jingleAudio.duration)?jingleAudio.duration*1000:5000;
+   if(rt.now()<start+duration){audio=jingleAudio;at=start;volume=.72;}else{audio=interfaceAudio;at=start+duration;volume=.32;}
   }
-  rt.onState('iimCable',v=>setCable(!!v?.connected,true));setCable(!!((await rt.getState('iimCable'))?.connected),false);
-  function playSyncedSound(name,volume=.5,enter=false){if(name==='keyboard'){try{playKeyboardSound(enter)}catch{}return}const map={confirm:'confirm-audio',error:'error-chord-audio',return:'confirm-audio','iim-connected':'iim-connected-audio'},audio=byId(map[name]||name);if(!audio)return;try{audio.currentTime=0;if(window.IROSLocalCue)window.IROSLocalCue(audio,volume);else playAudio(audio,volume)}catch{}}
-  rt.on('sound',m=>{if(m.name==='asset')window.IROSPlayRemoteAudio?.(m);else playSyncedSound(m.name,m.volume,m.enter)});
-  rt.on('master-message',m=>{if(!m?.text)return;const type=m.type||'secret';byId('terminal-output').insertAdjacentHTML('beforeend',`<div class="terminal-entry"><pre class="terminal-response ${type}">${escapeHtml(m.text)}</pre></div>`);byId('terminal-output').scrollTop=byId('terminal-output').scrollHeight;playSyncedSound('return',.42);scheduleSnapshot()});
-
-  function sendIimRequest(command,module='07'){if(!controller())return null;pendingIimRequest={id:crypto.randomUUID(),command,module,requestedBy:control,createdAt:Date.now(),status:'pending'};rt.setState('iimRequest',pendingIimRequest).catch(()=>{pendingIimRequest=null;iimState.connecting=false;input.disabled=false;output.insertAdjacentHTML('beforeend',terminalText('FALHA DE CONEXÃO COM A UNIDADE IIM. TENTE NOVAMENTE.','error'))});return pendingIimRequest}
-  const originalTerminalAnswer=terminalAnswer,originalIimAnswer=iimAnswer;
-  
-  terminalAnswer=function(command){if(controller())rt.setState('history/'+crypto.randomUUID(),{at:rt.now(),text:('COMANDO: '+command).slice(0,500)}).catch(()=>{});const c=command.toUpperCase().replace(/\s+/g,' ').trim();if(/^IIM(?:\s|$)/.test(c)&&!cableConnected)return terminalText('ERRO IIM-01 // INTERFACE NÃO DETECTADA\n\nO CABO FÍSICO DA IIM NÃO ESTÁ CONECTADO AO COMPUTADOR.\nA PORTA EXTERNA NÃO RECEBE ENERGIA, IDENTIFICAÇÃO OU TELEMETRIA.\n\nConecte e energize a unidade antes de executar comandos IIM.','error');if((c==='IIM CONNECT MOD-07'||c==='IIM CONNECT MOD-7')&&cableConnected&&!iimState.mode){iimState.connecting=true;input.disabled=true;sendIimRequest('IIM CONNECT MOD-07');return iimText('IIM // SOLICITAÇÃO DE ACOPLAMENTO\n\nPORTA FÍSICA: DETECTADA\nUNIDADE EXTERNA: ENERGIZADA\nHOSPEDEIRO DECLARADO: MOD-07\n\nCONFIRMAÇÃO DO SISTEMA IIM SOLICITADA.\nAGUARDANDO RESPOSTA DA UNIDADE...','iim-warning')}return originalTerminalAnswer(command)};
-  iimAnswer=function(command){const c=command.toUpperCase().replace(/\s+/g,' ').trim();if(c==='OCULAR ACTIVATE'&&!iimState.ocularActive){sendIimRequest('OCULAR ACTIVATE',iimState.module||'07');return iimText('REATIVAÇÃO OCULAR PREPARADA.\nAGUARDANDO CONFIRMAÇÃO DA UNIDADE IIM...','iim-warning')}return originalIimAnswer(command)};
-  rt.onState('iimApproval',approval=>{if(!approval||!controller()||!cableConnected)return;rt.getState('iimRequest').then(request=>{if(!request||request.id!==approval.requestId||pendingIimRequest?.id!==request.id)return;if(approval.status==='approved'&&request.command==='IIM CONNECT MOD-07'){completeIimConnection();rt.send('sound',{name:'confirm',volume:.55})}else if(approval.status==='approved'&&request.command==='OCULAR ACTIVATE'){const response=originalIimAnswer('OCULAR ACTIVATE');output.insertAdjacentHTML('beforeend',`<div class="terminal-entry">${response}</div>`);output.scrollTop=output.scrollHeight;rt.send('sound',{name:'confirm',volume:.55})}else if(approval.status==='denied'){iimState.connecting=false;input.disabled=false;input.focus();output.insertAdjacentHTML('beforeend',`<div class="terminal-entry">${terminalText('AÇÃO IIM RECUSADA PELA UNIDADE.\nNENHUMA ALTERAÇÃO FOI APLICADA.','error')}</div>`)}pendingIimRequest=null;scheduleSnapshot()})});
-})().catch(err=>{const s=document.querySelector('#control-gate-status');if(s)s.textContent='CONEXÃO NÃO DISPONÍVEL // '+err.message;console.error('IROS',err);});
-
-
-
-
+  if(!musicEnabled&&['login','desktop'].includes(stage)){audio=stage==='desktop'?computerLoopAudio:null;at=p?.loginAt||0;volume=.075;}
+  if(!audioEnabled)audio=null;
+  for(const track of tracks)if(track!==audio&&!track.paused)track.pause();
+  if(!audio)return;applyAudioVolume(audio,volume);
+  if(Number.isFinite(audio.duration)&&audio.duration>0){let position=Math.max(0,(rt.now()-at)/1000);if(audio.loop)position%=audio.duration;if(position>=audio.duration){audio.pause();return}if(force||Math.abs(audio.currentTime-position)>.45)audio.currentTime=position;}
+  if(audio.paused)audio.play().catch(()=>{});
+ }
+ function tick(){
+  if(!entered||!session)return;
+  const p=session.power,stage=phase();
+  if(p.epoch!==lastEpoch){lastEpoch=p.epoch;reset();}
+  if(stage!==lastPhase){
+   lastPhase=stage;computerPoweredOn=stage!=='off';
+   $('power-prompt').classList.toggle('hidden',stage!=='off');$('startup-post').classList.toggle('active',stage==='post');$('startup-splash').classList.toggle('active',stage==='splash');$('startup-splash').setAttribute('aria-hidden',String(stage!=='splash'));
+   const startup=['off','post','splash'].includes(stage);$('startup-screen').classList.toggle('finished',!startup);document.body.classList.toggle('startup-active',startup);loginScreen.classList.toggle('startup-wait',startup);
+   if(stage==='boot'){window.IROSLocalCue?.(loginSuccessAudio,.82);loginScreen.classList.add('authenticated');bootScreen.classList.add('active');bootScreen.setAttribute('aria-hidden','false');}
+   if(stage==='desktop'){unlock(false);interfaceSoundsReady=true;bootScreen.classList.remove('active');bootScreen.setAttribute('aria-hidden','true');}
+   musicTick(true);
+  }
+  if(stage==='post'){const progress=(rt.now()-p.at)/p.postMs;document.querySelectorAll('#post-lines p').forEach((el,i,all)=>el.classList.toggle('visible',progress>.08+i*.72/all.length));$('post-command').classList.toggle('visible',progress>.82);}
+  if(stage==='splash')document.querySelectorAll('#iros-steps p').forEach((el,i,all)=>el.classList.toggle('visible',rt.now()-p.at-p.postMs>350+i*p.splashMs*.68/all.length));
+  if(stage==='boot'){const progress=Math.min(100,Math.floor((rt.now()-p.loginAt)/40));$('boot-progress-bar').style.width=progress+'%';$('boot-percent').textContent=progress+'% // RECONSTRUINDO SESSÃO';document.querySelectorAll('#boot-log p').forEach(el=>el.classList.add('visible'));}
+  const notesHash=JSON.stringify(session.notes||{});if(notesHash!==lastNotes){lastNotes=notesHash;const active=irosNotes.find(n=>n.id===activeNoteId),dirty=active&&(noteText.value!==active.text||normalizeNoteTitle(noteTitle.value)!==active.title);noteBaseline=JSON.parse(notesHash);if(session.notes){irosNotes=Object.values(session.notes);if(dirty){irosNotes=irosNotes.filter(n=>n.id!==active.id);irosNotes.push(active);}if(!irosNotes.some(n=>n.id===activeNoteId))activeNoteId=irosNotes[0]?.id||null;renderIrosNotes();if(!dirty)loadActiveNote();}}
+  Object.assign(iimState,{mode:!!session.iim?.mode&&cable,module:session.iim?.mode&&cable?'07':null,ocularActive:!!session.iim?.ocular,connecting:false});setIimInterface(iimState.mode);input.disabled=false;
+  if(stage!=='desktop')return;
+  const rows=Object.values(session.entries||{}).sort((a,b)=>a.at-b.at||a.seq-b.seq),ids=new Set(rows.map(r=>r.id));
+  for(const el of out.querySelectorAll('[data-shared-entry]'))if(!ids.has(el.dataset.sharedEntry)){rendered.delete(el.dataset.sharedEntry);el.remove();}
+  for(const row of rows){if(rendered.has(row.id)||row.at>rt.now())continue;rendered.add(row.id);const nearBottom=out.scrollHeight-out.scrollTop-out.clientHeight<70;const el=document.createElement('div');el.className='terminal-entry';el.dataset.sharedEntry=row.id;
+   if(row.command&&row.command.toUpperCase()!=='CLEAR'){const cmd=document.createElement('div');cmd.className='terminal-command';cmd.textContent=(session.iim?.mode?'C:\\IIM\\MOD-07>':'C:\\INTERAURA>')+' '+row.command;el.append(cmd);}
+   el.append(clean(row.html));const next=[...out.children].find(n=>{const r=session.entries[n.dataset.sharedEntry];return r&&(r.at>row.at||(r.at===row.at&&r.seq>row.seq))});out.insertBefore(el,next||null);
+   if(nearBottom)out.scrollTop=out.scrollHeight;
+   if(ready&&rt.connected&&rt.now()-row.at<2000&&row.html){playTransientSound(terminalReturnSounds[row.seq%terminalReturnSounds.length],.34);if(/^(MOD-01|MÓDULO-01)$/i.test(row.command)){out.classList.add('terminal-neural-fault');setTimeout(()=>out.classList.remove('terminal-neural-fault'),3200);}}
+   if(ready&&row.notice&&rt.now()-row.at<3000)window.dispatchEvent(new CustomEvent('iros-notice',{detail:row.notice}));
+  }
+  ready=true;
+ }
+ rt.onState('session',value=>{session=value||model.initial();tick()});
+ rt.onState('settings',value=>{settings=value||{};window.dispatchEvent(new CustomEvent('iros-settings',{detail:settings}));});
+ rt.onState('error',message=>fail(Error(message)));
+ rt.onState('connection',connected=>{if(!connected){label.hidden=false;label.textContent='CONEXÃO INTERROMPIDA // AGUARDANDO RECONEXÃO';}else if(entered){label.hidden=false;label.textContent='SESSÃO COMPARTILHADA // INTERAÇÃO LIVRE';}else label.hidden=true;});
+ rt.onState('iimCable',value=>{const changed=cable!==!!value?.connected;cable=!!value?.connected;window.interauraCableConnected=cable;const icon=$('iros-iim-link');icon?.classList.toggle('connected',cable);if(changed&&cable&&entered&&phase()==='desktop'){icon?.classList.add('announcing');setTimeout(()=>icon?.classList.remove('announcing'),6500);window.IROSLocalCue?.($('iim-connected-audio'),.62);}if(!cable){Object.assign(iimState,{mode:false,module:null,ocularActive:false});setIimInterface(false);}});
+ form.querySelector('button[type=submit]').disabled=false;status.textContent='SESSÃO DISPONÍVEL // INTERAÇÃO LIVRE';
+ if(identity){$('control-player').value=identity.playerName||'';$('control-character').value=identity.characterName||'';}
+ form.addEventListener('submit',e=>{e.preventDefault();e.stopPropagation();identity={characterName:$('control-character').value.trim(),playerName:$('control-player').value.trim()};if(!identity.characterName||!identity.playerName)return;sessionStorage.setItem('iros_identity',JSON.stringify(identity));entered=true;gate.hidden=true;label.hidden=false;label.textContent='SESSÃO COMPARTILHADA // INTERAÇÃO LIVRE';const cue=$('confirm-audio');cue.volume=0;cue.play().then(()=>{cue.pause();cue.currentTime=0}).catch(()=>{});tick();musicTick(true);presence();});
+ function presence(){if(entered)rt.setState('participants/'+rt.clientId,{...identity,authUid:rt.auth?.currentUser?.uid||null,at:rt.now()}).catch(fail);}
+ setInterval(presence,15000);
+ const localPersist=persistIrosNotes;persistIrosNotes=function(){localPersist();if(!canInteract())return;const local=Object.fromEntries(irosNotes.map(n=>[n.id,n])),patch={};for(const [id,note] of Object.entries(local))if(JSON.stringify(note)!==JSON.stringify(noteBaseline[id]))patch[id]=note;for(const id of Object.keys(noteBaseline))if(!local[id])patch[id]=null;if(Object.keys(patch).length)act('notes',{patch}).then(()=>noteStatus.textContent='SALVO // SESSÃO COMPARTILHADA').catch(()=>noteStatus.textContent='FALHA DE SINCRONIZAÇÃO // CÓPIA LOCAL PRESERVADA');};
+ function confirmPower(kind){return new Promise(resolve=>{const overlay=document.createElement('div');overlay.className='control-gate';overlay.style.background='#0009';overlay.innerHTML='<section class="control-gate-panel" role="dialog" aria-modal="true" aria-labelledby="power-confirm-title"><h1 id="power-confirm-title">'+(kind==='off'?'DESLIGAR':'REINICIAR')+' IROS</h1><p>Esta ação afeta o computador de todos os participantes.</p><button type="button" data-confirm>CONFIRMAR</button> <button type="button" data-cancel>CANCELAR</button></section>';document.body.append(overlay);function finish(value){overlay.remove();resolve(value)}overlay.querySelector('[data-confirm]').onclick=()=>finish(true);overlay.querySelector('[data-cancel]').onclick=()=>finish(false);overlay.querySelector('[data-cancel]').focus();});}
+ document.addEventListener('click',async e=>{
+  const button=e.target.closest('#power-button,[data-power]');if(!button)return;e.preventDefault();e.stopImmediatePropagation();if(!canInteract())return;
+  const kind=button.dataset.power||'on';if(kind!=='on'&&!await confirmPower(kind))return;
+  const ms=(a,f)=>Number.isFinite(a.duration)&&a.duration>1?Math.round(a.duration*1000):f;
+  act(kind,{postMs:ms(powerOnAudio,7600),splashMs:ms(irosStartupAudio,5200)}).catch(()=>{});
+ },true);
+ document.addEventListener('submit',e=>{
+  if(e.target!==$('terminal-form')&&e.target!==$('login-form'))return;e.preventDefault();e.stopImmediatePropagation();if(!canInteract())return;
+  if(e.target===$('login-form')){
+   const user=$('login-user').value.trim().toLowerCase(),pass=$('login-pass').value;
+   if(['ariella','a.chiyomi','a.chioyomi','ariella chiyomi'].includes(user)&&pass==='SAUDADE-0317-88'){act('login').catch(()=>{});$('login-pass').value='';}
+   else{loginError.textContent='アクセス拒否 // IDENTIFICAÇÃO OU CÓDIGO INVÁLIDO';playSystemError();}return;
+  }
+  const command=input.value.trim();if(!command)return;input.value='';terminalHistory.push(command);terminalHistoryIndex=terminalHistory.length;
+  act('command',{command,cable}).then(()=>rt.setState('history/'+crypto.randomUUID(),{at:rt.now(),text:('COMANDO: '+command).slice(0,500)})).catch(()=>{input.value=command;});
+ },true);
+ // Connection loss and administrative suspension block writes, never other participants' scrolling.
+ document.addEventListener('click',e=>{if(!entered||canInteract()||e.target.closest('#control-gate,.audio-controls'))return;if(e.target.closest('button,a')){e.preventDefault();e.stopImmediatePropagation();}},true);
+ document.addEventListener('pointerdown',()=>musicTick(),{passive:true});document.addEventListener('visibilitychange',()=>{if(!document.hidden){tick();musicTick(true)}});
+ document.addEventListener('click',e=>{if(!canInteract())return;const target=e.target.closest('[data-open-app],.archive-row,[data-view-link]');if(target)rt.setState('history/'+crypto.randomUUID(),{at:rt.now(),text:('ACESSO: '+(target.dataset.file||target.dataset.openApp||target.textContent.trim())).slice(0,500)}).catch(()=>{});},true);
+ setInterval(tick,200);setInterval(musicTick,2000);
+})().catch(error=>{document.querySelector('#control-gate-status').textContent='CONEXÃO NÃO DISPONÍVEL // '+error.message;console.error('IROS',error)});
