@@ -7,7 +7,7 @@ function setup(){
  const action=async fn=>{try{await fn();$('gm-action-status').textContent='ALTERAÇÃO TRANSMITIDA.'}catch(error){$('gm-action-status').textContent='ERRO: '+error.message}};
  const save=patch=>rt.setState('settings',{...settings,...patch});
  rt.onState('settings',value=>{settings=value||{};$('gm-condition').value=settings.alert||'NORMAL';$('gm-credential-block').checked=!!settings.credentialsBlocked});
- rt.onState('history',value=>{const entries=Object.values(value||{}).sort((a,b)=>a.at-b.at).slice(-250);$('gm-player-history').textContent=entries.map(row=>new Date(row.at).toLocaleTimeString()+' // '+row.text).join('\n');$('gm-player-history').style.whiteSpace='pre-wrap';});
+ rt.onState('history',value=>{const entries=Object.values(value||{}).sort((a,b)=>a.at-b.at).slice(-250);$('gm-player-history').textContent=entries.map(row=>new Date(row.at).toLocaleTimeString()+' // '+(row.characterName&&row.playerName?row.characterName+' (player: '+row.playerName+')':row.characterName||row.playerName||'IDENTIFICAÇÃO NÃO REGISTRADA')+' // '+row.text).join('\n');$('gm-player-history').style.whiteSpace='pre-wrap';});
  $('gm-condition-save').onclick=()=>action(()=>save({alert:$('gm-condition').value,blocked:$('gm-condition').value==='BLOQUEIO'}));
  $('gm-credential-save').onclick=()=>action(()=>save({credentialsBlocked:$('gm-credential-block').checked}));
  for(const [id,blocked] of [['gm-program-block',true],['gm-program-allow',false]])$(id).onclick=()=>action(()=>save({blockedPrograms:{...settings.blockedPrograms,[$('gm-program').value]:blocked}}));

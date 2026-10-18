@@ -841,7 +841,7 @@ records[49].manifestacoes.push("Conhecimento procedural preservado para pilotage
 records[49].psych += " Antes do recolhimento, a Interaura já possuía registros que confirmavam sua experiência na operação de helicópteros e aviões civis. Após os apagamentos, o Módulo-49 deixou de reconhecer instrutores, aeródromos, empresas e modelos ligados ao próprio passado, mas preservou a execução prática. Em simuladores e testes instrumentais, realizou partida, navegação, aproximação, pouso e respostas de emergência sem treinamento posterior. A equipe classificou o fenômeno como memória procedural resistente à supressão mnêmica.";
 
 const loginScreen=document.querySelector('#login-screen'),bootScreen=document.querySelector('#boot-screen'),appContent=document.querySelector('#app-content'),irosDesktop=document.querySelector('#iros-desktop'),loginForm=document.querySelector('#login-form'),loginError=document.querySelector('#login-error'),loginAudio=document.querySelector('#login-audio'),loginSuccessAudio=document.querySelector('#login-success-audio'),powerOnAudio=document.querySelector('#power-on-audio'),irosStartupAudio=document.querySelector('#iros-startup-audio'),jingleAudio=document.querySelector('#jingle-audio'),interfaceAudio=document.querySelector('#interface-audio'),hoverAudio=document.querySelector('#hover-audio'),confirmAudio=document.querySelector('#confirm-audio'),errorChordAudio=document.querySelector('#error-chord-audio'),loginAudioToggle=document.querySelector('#login-audio-toggle'),volumeDown=document.querySelector('#volume-down'),volumeUp=document.querySelector('#volume-up'),volumeLevel=document.querySelector('#volume-level'),crtToggle=document.querySelector('#crt-toggle');
-let audioEnabled=true,musicEnabled=true,masterVolume=.7,interfaceSoundsReady=false,ambienceEligible=false,booting=false,lastHoverTarget=null;
+let audioEnabled=true,musicEnabled=true,masterVolume=.1,interfaceSoundsReady=false,ambienceEligible=false,booting=false,lastHoverTarget=null;
 const computerLoopAudio=new Audio('assets/embedded/20811484cc0f4e2f.ogg');computerLoopAudio.loop=true;computerLoopAudio.preload='auto';
 const terminalReturnSounds=['assets/embedded/c191f1c49deea284.wav','assets/embedded/35010778fa6591d7.wav','assets/embedded/7f7e00bd9d2da19f.wav','assets/embedded/3c16d83b8e91bae2.wav'].map(src=>new Audio(src));
 const keyboardClickSounds=['assets/embedded/a58e242c9f4f7683.wav','assets/embedded/891098457f7418ce.wav','assets/embedded/279d3177bf73a2ef.wav','assets/embedded/61dbbee7250e7cc0.wav','assets/embedded/f00699777435627f.wav','assets/embedded/1c7f0c8a08823566.wav'].map(src=>new Audio(src));
@@ -1328,10 +1328,10 @@ document.querySelectorAll('[data-system-tab]').forEach(button=>button.addEventLi
 loadIrosNotes();refreshTaskButtons();
 
 </script>
-<script src="firebase-config.js?rev=20261018-shutdown"></script>
-<script src="realtime-core.js?rev=20261018-shutdown"></script>
-<script src="shared-session.js?rev=20261018-shutdown"></script><script src="online-sync.js?rev=20261018-shutdown"></script>
-<script src="session-controls.js?rev=20261018-shutdown"></script>
+<script src="firebase-config.js?rev=20261018-history"></script>
+<script src="realtime-core.js?rev=20261018-history"></script>
+<script src="shared-session.js?rev=20261018-history"></script><script src="online-sync.js?rev=20261018-history"></script>
+<script src="session-controls.js?rev=20261018-history"></script>
 </body>
 </html>
 

@@ -6,7 +6,10 @@
  let noteBaseline={},lastNotes='';
  let identity;try{identity=JSON.parse(sessionStorage.getItem('iros_identity')||'null')}catch{}
  const canInteract=()=>entered&&rt.connected&&phase()!=='shutdown'&&!settings.blocked&&!settings.credentialsBlocked;
- window.IROSTable={isController:canInteract,isApplying:()=>false,refresh:()=>{},get settings(){return settings}};
+ window.IROSTable={isController:canInteract,isApplying:()=>false,refresh:()=>{},recordAction,get settings(){return settings}};
+ let lastHistory={text:'',at:0};
+ function recordAction(text){if(!canInteract())return Promise.resolve();const at=rt.now(),value=String(text).slice(0,500);if(lastHistory.text===value&&at-lastHistory.at<650)return Promise.resolve();lastHistory={text:value,at};return rt.setState('history/'+crypto.randomUUID(),{at,text:value,playerName:identity.playerName,characterName:identity.characterName,clientId:rt.clientId,authUid:rt.auth?.currentUser?.uid||null}).catch(()=>{});}
+ const originalArchive=openArchiveRow;openArchiveRow=function(row){recordAction('ARQUIVO: '+(row.dataset.file||row.querySelector('button')?.textContent||'NÃO IDENTIFICADO'));return originalArchive(row)};
  const fail=error=>{status.hidden=false;status.textContent='NÃO FOI POSSÍVEL SINCRONIZAR // '+error.message;label.hidden=false;label.textContent=status.textContent;};
  function evaluate(command,s){
   const previous={...iimState},recover=terminalRecoverAttempts;
@@ -16,7 +19,7 @@
  async function act(kind,extra={}){
   if(!canInteract())return;
   const op={kind,id:crypto.randomUUID(),at:rt.now(),identity,...extra};
-  try{return await rt.transact('session',s=>model.reduce(s,op,evaluate))}catch(error){fail(error);throw error}
+  try{const result=await rt.transact('session',s=>model.reduce(s,op,evaluate));if(result){const action=kind==='command'?'COMANDO: '+extra.command:({on:'LIGOU O COMPUTADOR',off:'DESLIGOU O COMPUTADOR',restart:'REINICIOU O COMPUTADOR',login:'AUTENTICOU A SESSÃO IROS',notes:'SALVOU ANOTAÇÕES'})[kind];if(action)recordAction(action);}return result;}catch(error){fail(error);throw error}
  }
  function clean(html){const t=document.createElement('template');t.innerHTML=html||'';t.content.querySelectorAll('script,iframe,object,embed,style,link,audio,video').forEach(n=>n.remove());for(const el of t.content.querySelectorAll('*'))for(const a of [...el.attributes])if(a.name.startsWith('on')||a.name==='srcdoc'||/^(?:javascript|data):/i.test(a.value))el.removeAttribute(a.name);t.content.querySelectorAll('.terminal-response').forEach(n=>n.dataset.revealed='true');return t.content;}
  function phase(){const p=session?.power;if(p?.shutdownAt&&rt.now()<p.shutdownAt+p.shutdownMs)return'shutdown';if(!p||p.mode==='off')return'off';const age=rt.now()-p.at;if(age<p.postMs)return'post';if(age<p.postMs+p.splashMs+420)return'splash';if(!p.loginAt)return'login';return rt.now()<p.loginAt+4000?'boot':'desktop';}
@@ -109,11 +112,11 @@
    else{loginError.textContent='アクセス拒否 // IDENTIFICAÇÃO OU CÓDIGO INVÁLIDO';playSystemError();}return;
   }
   const command=input.value.trim();if(!command)return;input.value='';terminalHistory.push(command);terminalHistoryIndex=terminalHistory.length;
-  act('command',{command,cable}).then(()=>rt.setState('history/'+crypto.randomUUID(),{at:rt.now(),text:('COMANDO: '+command).slice(0,500)})).catch(()=>{input.value=command;});
+  act('command',{command,cable}).catch(()=>{input.value=command;});
  },true);
  // Connection loss and administrative suspension block writes, never other participants' scrolling.
  document.addEventListener('click',e=>{if(!entered||canInteract()||e.target.closest('#control-gate,.audio-controls'))return;if(e.target.closest('button,a')){e.preventDefault();e.stopImmediatePropagation();}},true);
  document.addEventListener('pointerdown',()=>musicTick(),{passive:true});document.addEventListener('visibilitychange',()=>{if(!document.hidden){tick();musicTick(true)}});
- document.addEventListener('click',e=>{if(!canInteract())return;const target=e.target.closest('[data-open-app],.archive-row,[data-view-link]');if(target)rt.setState('history/'+crypto.randomUUID(),{at:rt.now(),text:('ACESSO: '+(target.dataset.file||target.dataset.openApp||target.textContent.trim())).slice(0,500)}).catch(()=>{});},true);
+ document.addEventListener('click',e=>{if(!canInteract())return;const target=e.target.closest('[data-open-app],.archive-row,[data-view-link]');if(target)recordAction('ACESSO: '+(target.dataset.file||target.dataset.openApp||target.textContent.trim()));},true);
  setInterval(tick,200);setInterval(musicTick,2000);
 })().catch(error=>{document.querySelector('#control-gate-status').hidden=false;document.querySelector('#control-gate-status').textContent='CONEXÃO NÃO DISPONÍVEL // '+error.message;console.error('IROS',error)});
