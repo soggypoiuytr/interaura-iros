@@ -70,10 +70,12 @@ body.desktop-mode .iros-app-window.processing-enter,body.desktop-mode #app-conte
 
 .desktop-icon[data-open-app="music"] .iros-audio-file-icon{background-size:224px 168px;background-position:-11px -60px}.desktop-icon[data-open-app="music"]>span:last-child{font:700 10px/1.25 "Courier New",monospace;overflow-wrap:normal;word-break:normal}
 
-.desktop-icon{position:relative}.iros-program-users{position:absolute;z-index:2;right:2px;top:-10px;max-width:160px;padding:1px 3px;border:1px solid #648d78;background:#092116e8;color:#b7dfcc;font:9px/1.2 "Courier New",monospace;text-shadow:none;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;pointer-events:none}.iros-app-window>.iros-program-users{right:78px;top:5px;max-width:40%;border:0;background:#10271ed9;font-size:9px;z-index:5}.terminal-command-author{font:10px "Courier New",monospace;color:#8cb9a4;white-space:normal}
+.desktop-icon{position:relative}.iros-program-users{position:absolute;z-index:2;right:2px;top:-10px;max-width:160px;padding:1px 3px;border:1px solid #648d78;background:#092116e8;color:#b7dfcc;font:9px/1.2 "Courier New",monospace;text-shadow:none;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;pointer-events:none}.iros-app-window>.iros-program-users{right:90px;top:5px;max-width:40%;border:0;background:#10271ed9;font-size:9px;z-index:5}.terminal-command-author{font:10px "Courier New",monospace;color:#8cb9a4;white-space:normal}
 
 .desktop-icon>.iros-program-users{left:50%;right:auto;top:9px;transform:translateX(-50%);width:max-content;max-width:108px;border:0;padding:1px 3px;background:#061b16d9;color:#b3cdbf;font:9px/1.2 "Courier New",monospace;text-align:center}.iros-app-window>.iros-program-users{top:7px;padding:0 3px;font-size:8px;color:#b3cdbf;background:#10271ebf}
 
 .iros-program-users.activity-glitch{animation:iros-activity-glitch .18s steps(1,end)}
 @keyframes iros-activity-glitch{0%{opacity:.35;translate:-1px 0}24%{opacity:.85;translate:1px 0;text-shadow:1px 0 #7fbfac}42%{opacity:.6;translate:0 0;clip-path:inset(20% 0 25% 0)}64%{opacity:1;translate:-1px 0;clip-path:none}82%,100%{opacity:1;translate:0 0;text-shadow:none}}
 @media(prefers-reduced-motion:reduce){.iros-program-users.activity-glitch{animation:none}}
+
+.iros-program-users{pointer-events:auto;cursor:default}
