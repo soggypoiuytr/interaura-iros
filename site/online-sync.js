@@ -11,7 +11,7 @@
  window.addEventListener('iros-media-action',e=>act('media',e.detail).catch(()=>{}));
  let lastHistory={text:'',at:0};
  function recordAction(text,committed=false){if(!entered||!rt.connected||(!committed&&!canInteract()))return Promise.resolve();const at=rt.now(),value=String(text).slice(0,500);if(lastHistory.text===value&&at-lastHistory.at<650)return Promise.resolve();lastHistory={text:value,at};return rt.setState('history/'+crypto.randomUUID(),{at,text:value,playerName:identity.playerName,characterName:identity.characterName,clientId:rt.clientId,authUid:rt.auth?.currentUser?.uid||null}).catch(()=>{});}
- const originalArchive=openArchiveRow;openArchiveRow=function(row){recordAction('ARQUIVO: '+(row.dataset.file||row.querySelector('button')?.textContent||'NÃO IDENTIFICADO'));return originalArchive(row)};
+ const originalArchive=openArchiveRow;openArchiveRow=function(row){recordAction('ARQUIVO: '+(row.dataset.file==='recovered-song'?'saudade_de_você.wav':row.dataset.file||row.querySelector('button')?.textContent||'NÃO IDENTIFICADO'));return originalArchive(row)};
  const fail=error=>{status.hidden=false;status.textContent='NÃO FOI POSSÍVEL SINCRONIZAR // '+error.message;label.hidden=false;label.textContent=status.textContent;};
  function evaluate(command,s){
   const previous={...iimState},recover=terminalRecoverAttempts;

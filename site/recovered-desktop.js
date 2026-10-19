@@ -12,7 +12,7 @@
  };
  closeIrosWindow=function(win){if(!win?.classList.contains('open'))return close(win);clearTimeout(closing.get(win));win.classList.remove('processing-enter');win.classList.add('processing-exit');cue('window-close');closing.set(win,setTimeout(()=>{close(win);win.classList.remove('processing-exit')},180));};
  $('chat-error-close').onclick=()=>{const popup=$('chat-recovery-error');popup.classList.remove('open');popup.setAttribute('aria-hidden','true');cue('window-close')};
- openArchiveRow=function(row){const valid=!!archiveDocuments[row.dataset.file],result=archive(row);if(valid){cue('file-open');const button=archiveReader.querySelector('[data-close-archive]'),onclose=button?.onclick;if(button)button.onclick=e=>{cue('file-close');onclose?.call(button,e)};}return result;};
+ openArchiveRow=function(row){if(row.dataset.file==='recovered-song'){archiveRows.forEach(r=>r.classList.toggle('selected',r===row));cue('file-open');openIrosApp('music');return;}const valid=!!archiveDocuments[row.dataset.file],result=archive(row);if(valid){cue('file-open');const button=archiveReader.querySelector('[data-close-archive]'),onclose=button?.onclick;if(button)button.onclick=e=>{cue('file-close');onclose?.call(button,e)};}return result;};
  let media=null,power=null;
  const audio=$('recovered-music'),boot=sounds['boot-extra'];boot.id='recovered-boot-extra';document.body.append(boot);
  function position(){if(!media)return 0;return Math.min(32.5,Math.max(0,media.position+(media.playing?(rt.now()-media.at)/1000:0)))}
