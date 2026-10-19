@@ -5,7 +5,7 @@
   const apps=new Map();
   for(const p of Object.values(roster)){
    if(p.online===false||!Number.isFinite(p.at)||rt.now()-p.at>20000||!p.activeApp)continue;
-   if(!apps.has(p.activeApp))apps.set(p.activeApp,new Set());apps.get(p.activeApp).add(p.playerName||p.characterName||'UsuÃ¡rio');
+   if(!apps.has(p.activeApp))apps.set(p.activeApp,new Set());apps.get(p.activeApp).add(p.characterName||p.playerName||'Usuário');
   }
   const targets=[...document.querySelectorAll('.desktop-icon[data-open-app],.iros-app-window')];
   for(const target of targets){
