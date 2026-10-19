@@ -203,7 +203,8 @@ body.crt-transition .shell{animation:crt-channel-shift .22s steps(2,end) 1!impor
 @media(prefers-reduced-motion:reduce){.terminal-window.iim-active::before,.iim-connect-jolt{animation:none}}
 .control-gate{position:fixed;inset:0;z-index:100000;display:grid;place-items:center;background:radial-gradient(circle at 50% 35%,#10231d 0,#030706 48%,#000 100%);color:#a7c8bc;font:12px/1.5 "Courier New",monospace}.control-gate[hidden]{display:none}.control-gate-panel{width:min(520px,calc(100vw - 32px));border:3px ridge #839a91;background:#07120f;box-shadow:0 0 44px #000;padding:18px}.control-gate h1{font:700 18px "Courier New",monospace;color:#d7eee6;letter-spacing:.08em;margin:0 0 8px}.control-gate-status{border:1px dashed #49675c;background:#020806;padding:9px;margin:12px 0;color:#79b9a2}.control-gate label{display:block;margin:9px 0}.control-gate input{display:block;width:100%;margin-top:4px;border:2px inset #9aaba4;background:#010504;color:#9fffd2;padding:8px;font:inherit}.control-gate-actions{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-top:14px}.control-gate button{border:2px outset #dae3df;background:#aebcb6;color:#06100d;padding:8px;font:700 11px "Courier New",monospace;cursor:pointer}.control-gate button:active{border-style:inset}.control-gate small{display:block;margin-top:10px;color:#547167}.observer-lock{position:fixed;left:50%;top:8px;z-index:99999;transform:translateX(-50%);border:1px solid #678b7d;background:rgba(2,10,8,.92);color:#92c8b5;padding:5px 11px;font:10px "Courier New",monospace;pointer-events:none}.observer-lock[hidden]{display:none}.iros-iim-link{position:relative;display:none;place-items:center;width:30px;height:25px;cursor:help}.iros-iim-link.connected{display:grid}.iros-iim-link img{width:23px;height:23px;object-fit:contain;image-rendering:pixelated;filter:contrast(1.12)}.iros-iim-link .iim-link-lamp{position:absolute;right:0;bottom:1px;width:6px;height:6px;border:1px solid #0a251b;background:#64f1a3;box-shadow:0 0 5px #64f1a3}.iros-iim-link.announcing{animation:iim-tray-announce .34s steps(2) infinite}.iros-iim-link .iros-remote-tooltip{right:-38px}.iros-iim-link:hover .iros-remote-tooltip,.iros-iim-link:focus .iros-remote-tooltip,.iros-iim-link.announcing .iros-remote-tooltip{display:block}.iros-iim-link.announcing .iros-remote-tooltip{animation:iim-tooltip-arrival .28s steps(2) 2}@keyframes iim-tray-announce{50%{filter:brightness(2.2);transform:translateY(-1px)}}@keyframes iim-tooltip-arrival{50%{transform:translateX(3px);filter:contrast(1.7)}}
 </style>
-<link rel="stylesheet" href="iros-shared-ui.css?rev=20261019-terminal-no-location"><link rel="stylesheet" href="retro-login.css?rev=20261019-terminal-no-location">
+<link rel="stylesheet" href="iros-shared-ui.css?rev=20261019-mines"><link rel="stylesheet" href="retro-login.css?rev=20261019-mines">
+<link rel="stylesheet" href="mines-iros.css?rev=20261019-mines">
 </head>
 <body class="startup-active">
   <div class="scanlines" aria-hidden="true"></div>
@@ -367,7 +368,7 @@ body.crt-transition .shell{animation:crt-channel-shift .22s steps(2,end) 1!impor
     </section>
     <section id="mines-window" class="iros-app-window iros-mini-window" data-app-window="mines" aria-hidden="true">
       <header class="iros-titlebar"><span class="iros-titlebar-title">CAMPO MINADO</span><span class="iros-window-controls"><button type="button" data-window-action="minimize">_</button><button type="button" data-window-action="close">×</button></span></header>
-      <div class="iros-window-body game-window"><div class="game-menu"><button id="mine-new" type="button">NOVO JOGO</button><button type="button" data-game-help="mines">AJUDA</button></div><div class="mine-status"><span id="mine-count">010</span><button id="mine-reset" type="button" title="Reiniciar">☻</button><span id="mine-time">000</span></div><div id="mine-grid" class="mine-grid" aria-label="Campo minado"></div><p id="mine-message" class="game-status">BOTÃO DIREITO MARCA UMA MINA.</p><div id="mines-help" class="game-dialog hidden"><b>CAMPO MINADO // AJUDA</b><p>Abra todos os setores seguros. Os números indicam minas adjacentes. Use o botão direito para marcar suspeitas.</p><button type="button" data-close-game-help>FECHAR</button></div></div>
+      <div class="iros-window-body game-window"><div class="game-menu"><button id="mine-new" type="button">NOVO JOGO</button><button id="mine-flag-mode" type="button" aria-pressed="false">MARCAR</button><button type="button" data-game-help="mines">AJUDA</button></div><div class="mine-heading"><span>VARREDURA DE SETORES</span><small>09 × 09 / 10 MINAS</small></div><div class="mine-status"><div class="mine-meter"><small>MINAS</small><span id="mine-count">010</span></div><button id="mine-reset" type="button" title="Reiniciar partida">:-)</button><div class="mine-meter"><small>TEMPO</small><span id="mine-time">000</span></div></div><div id="mine-grid" class="mine-grid" aria-label="Campo minado"></div><p id="mine-progress" class="mine-progress">SETORES SEGUROS: 00 / 71</p><p id="mine-message" class="game-status" role="status">BOTÃO DIREITO MARCA UMA MINA.</p><div id="mines-help" class="game-dialog hidden"><b>CAMPO MINADO // AJUDA</b><p>Abra todos os setores seguros. Os números indicam minas adjacentes. Use o botão direito, a tecla F na casa selecionada ou MARCAR para colocar bandeiras. O primeiro setor aberto é sempre seguro.</p><button type="button" data-close-game-help>FECHAR</button></div></div>
     </section>
     <aside id="solitaire-system-error" class="solitaire-system-error" aria-hidden="true" role="alertdialog" aria-label="Erro ao iniciar Paciência"><article id="solitaire-error-dialog" class="program-error"><header><span class="iros-pixel-icon warning" aria-hidden="true"></span><span>ERRO DE SISTEMA // PACIENCIA.EXE</span></header><section><b>O EXECUTÁVEL NÃO PÔDE SER INICIADO.</b><p>A imagem do programa está incompleta. Bibliotecas exigidas pertencem a um volume que não respondeu à montagem do IROS.</p><code>EXC 0x0000000E<br>FALHA EM CARDLIB.DLL<br>SETOR B07: NÃO MONTADO</code><p>O processo foi encerrado antes da criação da janela do aplicativo.</p></section><footer><button id="solitaire-retry" type="button">TENTAR NOVAMENTE</button><button id="solitaire-error-close" type="button">FECHAR</button></footer></article></aside>
     <section id="system-window" class="iros-app-window iros-system-window" data-app-window="system" aria-hidden="true">
@@ -817,7 +818,7 @@ body.crt-transition .shell{animation:crt-channel-shift .22s steps(2,end) 1!impor
 
     <footer>REDE INTERNA INTERAURA // ACESSO NÃO AUTORIZADO É ESTRITAMENTE PROIBIDO // <span lang="ja">無断アクセス禁止</span><br>IROS 3.7.12 // TERMINAL INT-JP-04 // SESSÃO SOMENTE LEITURA // 29/12/1999 - 03:42</footer>
   </main>
-  <script src="terminal-timeline.js?rev=20261019-terminal-no-location"></script>
+  <script src="terminal-timeline.js?rev=20261019-mines"></script>
 <script>
 const available = new Set([1,6,7,8,24,35,42,49]);
 const recovering = new Set([4,11,19,53,67,86]);
@@ -1305,9 +1306,7 @@ function enhanceIrosExplorer(){
 }
 enhanceIrosExplorer();
 
-let mineTimer=null,mineSeconds=0;
-function buildMinefield(){const board=document.querySelector('#mine-grid');if(!board)return;clearInterval(mineTimer);mineSeconds=0;document.querySelector('#mine-time').textContent='000';document.querySelector('#mine-count').textContent='010';document.querySelector('#mine-message').textContent='BOTÃO DIREITO MARCA UMA MINA.';const mines=new Set();while(mines.size<10)mines.add(Math.floor(Math.random()*81));board.innerHTML='';let started=false,ended=false,flags=0;const cells=[];const neighbors=i=>{const x=i%9,y=Math.floor(i/9),list=[];for(let yy=y-1;yy<=y+1;yy++)for(let xx=x-1;xx<=x+1;xx++)if(xx>=0&&xx<9&&yy>=0&&yy<9&&(xx!==x||yy!==y))list.push(yy*9+xx);return list};const reveal=i=>{const cell=cells[i];if(!cell||cell.classList.contains('open')||cell.classList.contains('flagged'))return;const count=neighbors(i).filter(n=>mines.has(n)).length;cell.textContent=count||'';cell.classList.add('open');if(!count)neighbors(i).forEach(reveal)};for(let i=0;i<81;i++){const button=document.createElement('button');button.type='button';button.className='mine-cell';button.dataset.index=i;button.addEventListener('contextmenu',e=>{e.preventDefault();if(button.classList.contains('open')||ended)return;button.classList.toggle('flagged');flags+=button.classList.contains('flagged')?1:-1;button.textContent=button.classList.contains('flagged')?'⚑':'';document.querySelector('#mine-count').textContent=String(Math.max(0,10-flags)).padStart(3,'0')});button.addEventListener('click',()=>{if(ended||button.classList.contains('flagged'))return;if(!started){started=true;mineTimer=setInterval(()=>{mineSeconds=Math.min(999,mineSeconds+1);document.querySelector('#mine-time').textContent=String(mineSeconds).padStart(3,'0')},1000)}if(mines.has(i)){button.textContent='✹';button.classList.add('open','mine');ended=true;clearInterval(mineTimer);cells.forEach((cell,j)=>{if(mines.has(j)){cell.textContent='✹';cell.classList.add('open','mine')}});document.querySelector('#mine-reset').textContent='☹';document.querySelector('#mine-message').textContent='FALHA: SETOR MINADO ACIONADO.';return}reveal(i);if(cells.filter(c=>c.classList.contains('open')).length===71){ended=true;clearInterval(mineTimer);document.querySelector('#mine-reset').textContent='☺';document.querySelector('#mine-message').textContent='TODOS OS SETORES SEGUROS FORAM LIMPOS.'}});cells.push(button);board.append(button)}document.querySelector('#mine-reset').textContent='☻'}
-document.querySelector('#mine-reset')?.addEventListener('click',buildMinefield);document.querySelector('#mine-new')?.addEventListener('click',buildMinefield);buildMinefield();
+
 
 const suits=['♠','♥','♦','♣'],ranks=['A','2','3','4','5','6','7','8','9','10','J','Q','K'];let solitaireDeck=[],solitaireSelected=null,solitaireFoundations=[[],[],[],[]];
 const cardRank=code=>ranks.indexOf(code.slice(0,-1))+1,cardSuit=code=>code.slice(-1),cardRed=code=>/[♥♦]/.test(code);
@@ -1330,13 +1329,14 @@ document.querySelectorAll('[data-system-tab]').forEach(button=>button.addEventLi
 loadIrosNotes();refreshTaskButtons();
 
 </script>
-<script src="firebase-config.js?rev=20261019-terminal-no-location"></script>
-<script src="realtime-core.js?rev=20261019-terminal-no-location"></script>
-<script src="tray-notice.js?rev=20261019-terminal-no-location"></script><script src="idle-power.js?rev=20261019-terminal-no-location"></script>
-<script src="discreet-entry.js?rev=20261019-terminal-no-location"></script>
-<script src="shared-session.js?rev=20261019-terminal-no-location"></script><script src="online-sync.js?rev=20261019-terminal-no-location"></script>
-<script src="presence-ui.js?rev=20261019-terminal-no-location"></script><script src="session-controls.js?rev=20261019-terminal-no-location"></script><script src="recovered-desktop.js?rev=20261019-terminal-no-location"></script>
-<script src="program-activity.js?rev=20261019-terminal-no-location"></script>
+<script src="firebase-config.js?rev=20261019-mines"></script>
+<script src="realtime-core.js?rev=20261019-mines"></script>
+<script src="tray-notice.js?rev=20261019-mines"></script><script src="idle-power.js?rev=20261019-mines"></script>
+<script src="discreet-entry.js?rev=20261019-mines"></script>
+<script src="shared-session.js?rev=20261019-mines"></script><script src="online-sync.js?rev=20261019-mines"></script>
+<script src="presence-ui.js?rev=20261019-mines"></script><script src="session-controls.js?rev=20261019-mines"></script><script src="recovered-desktop.js?rev=20261019-mines"></script>
+<script src="program-activity.js?rev=20261019-mines"></script>
+<script src="minefield.js?rev=20261019-mines"></script>
 </body>
 </html>
 

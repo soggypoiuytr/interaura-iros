@@ -1,0 +1,26 @@
+#mines-window{top:8%;width:338px;height:auto;max-height:calc(100vh - 100px);min-height:0;min-width:300px;max-width:calc(100vw - 16px)}
+#mines-window .game-window{background:#10271e;padding:0 14px 8px;overflow:auto;flex:0 1 auto}
+#mines-window .game-menu{margin:0 -14px 12px;background:#9eafa4}
+#mine-flag-mode[aria-pressed=true]{border:1px inset #e1e9df;background:#234738;color:#deede0}
+.mine-heading{display:flex;justify-content:space-between;align-items:center;gap:8px;color:#a2c1ab;font:bold 10px/1.4 "Courier New",monospace;margin-bottom:8px}.mine-heading small{font-size:9px;color:#6e927d}
+#mines-window .mine-status{border:2px inset #91a48f;background:#203b2c;padding:7px 9px;margin-bottom:10px}
+.mine-meter{display:flex;flex-direction:column;gap:3px}.mine-meter small{font:9px "Courier New",monospace;letter-spacing:.1em;color:#9ab49e;text-align:center}
+#mines-window .mine-status span{min-width:61px;border:2px inset #6d826e;background:#07130a;color:#b3d88c;font:bold 24px/1 "Courier New",monospace;padding:4px 5px;text-shadow:0 0 4px #8eb86444}
+#mines-window .mine-status button{width:39px;height:36px;font:bold 12px "Courier New",monospace;background:#afc0af;border:2px outset #d4dfce;color:#0a1c10;cursor:pointer}
+#mines-window .mine-status button:active{border-style:inset}
+#mines-window .mine-grid{width:min(270px,100%);margin:0 auto;border:3px inset #91a48f;background:#829684;gap:0}
+#mines-window .mine-cell{position:relative;min-width:0;min-height:0;aspect-ratio:1;border:2px outset #c7d5be;background:#91a58f;color:#0b2010;font:bold 16px/1 "Courier New",monospace;cursor:pointer;border-radius:0;opacity:1;appearance:none}
+#mines-window .mine-cell:not(.open):not(:disabled):active{border-style:inset;background:#718d75}
+#mines-window .mine-cell:focus-visible{outline:1px dotted #061a0b;outline-offset:-5px;z-index:1}
+#mines-window .mine-cell.open{border:1px solid #718972;background:#bdcbb5;cursor:default}
+#mines-window .mine-cell[data-count="1"]{color:#194b72}#mines-window .mine-cell[data-count="2"]{color:#255b31}#mines-window .mine-cell[data-count="3"]{color:#8a2924}#mines-window .mine-cell[data-count="4"]{color:#473266}#mines-window .mine-cell[data-count="5"]{color:#70291e}#mines-window .mine-cell[data-count="6"]{color:#195b60}
+#mines-window .mine-cell.flagged::before{content:"";position:absolute;left:43%;top:20%;height:55%;border-left:2px solid #17311e;border-bottom:2px solid #17311e;width:28%}
+#mines-window .mine-cell.flagged::after{content:"";position:absolute;left:calc(43% + 2px);top:20%;border-top:5px solid transparent;border-bottom:5px solid transparent;border-left:9px solid #912e29}
+#mines-window .mine-cell.mine::before{content:"";position:absolute;left:30%;top:30%;width:40%;height:40%;background:#112518;border:1px solid #06140a;box-shadow:0 -5px #112518,0 5px #112518,-5px 0 #112518,5px 0 #112518}
+#mines-window .mine-cell.mine::after{content:"";position:absolute;left:36%;top:34%;width:3px;height:3px;background:#e6ecdb;border:0}
+#mines-window .mine-cell.detonated{background:#b57262;border-color:#794339}
+#mines-window .mine-cell.wrong-flag{background:repeating-linear-gradient(45deg,#bdcbb5 0 7px,#9f7766 7px 9px)}
+#mines-window .mine-grid[data-state=won]{outline:1px solid #9cce8c;outline-offset:2px}
+.mine-progress{margin:9px 0 0;font:9px "Courier New",monospace;color:#b3cba9;letter-spacing:.04em}
+#mines-window .game-status{min-height:0;margin:7px 0 0;font:9px/1.4 "Courier New",monospace;color:#86aa8c}
+@media(max-width:480px){#mines-window{left:8px!important;top:50px!important;width:calc(100vw - 16px);height:auto;max-height:calc(100vh - 95px)}.mine-heading{font-size:9px}.mine-heading small{font-size:8px}}

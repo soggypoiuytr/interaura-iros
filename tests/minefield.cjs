@@ -1,0 +1,7 @@
+const fs=require('fs'),vm=require('vm'),assert=require('assert/strict');const c={};vm.createContext(c);vm.runInContext(fs.readFileSync('site/minefield.js','utf8'),c);const create=c.IROSMinefield.create;
+for(let first=0;first<81;first++){const g=create(()=>0);const r=g.open(first);assert(!g.mines.has(first));assert(g.neighbors(first).every(n=>!g.mines.has(n)));assert.equal(g.mines.size,10);assert.notEqual(r.kind,'loss');for(let i=0;i<81;i++)if(!g.mines.has(i))g.open(i);assert(g.won);assert.equal(g.opened.size,71);assert.equal(g.flags.size,10);assert.equal(g.open(0).kind,'ignored');}
+const flags=create();for(let i=0;i<10;i++)assert(flags.flag(i));assert(!flags.flag(10));assert.equal(flags.open(0).kind,'ignored');assert(!flags.started);assert(flags.flag(0));flags.open(0);assert(!flags.flag(0));
+const loss=create(()=>.5);loss.open(40);const bomb=[...loss.mines][0];assert.equal(loss.open(bomb).kind,'loss');assert(loss.ended);assert(!loss.won);assert(!loss.flag(80));assert.equal(loss.open(80).kind,'ignored');
+for(const name of ['click','flag','reveal-area','hit-bomb','reveal-bomb','victory']){const p='site/assets/audio/mines/'+name+'.wav',b=fs.readFileSync(p);assert.equal(b.toString('ascii',0,4),'RIFF');assert.equal(b.toString('ascii',8,12),'WAVE');}
+assert(!fs.readFileSync('site/minefield.js','utf8').toLowerCase().includes('dating'));
+console.log('PASS: 81 primeiras jogadas seguras, expansão, vitória, derrota, bandeiras, bloqueio após fim e seis WAV válidos sem música.');
