@@ -1,7 +1,7 @@
 (function(){
  const room=(new URLSearchParams(location.search).get('sala')||window.INTERAURA_ROOM||'int-jp-04').replace(/[^a-zA-Z0-9_-]/g,'').slice(0,60)||'int-jp-04',base='irosRooms/'+room,clientId='cli-'+crypto.randomUUID();
  const channel=new BroadcastChannel('interaura-'+room),listeners=new Map(),stateListeners=new Map(),seen=new Set();
- let db=null,auth=null,ready=false,initPromise,offset=0,connected=true,discreet=false,presenceCycle=null;
+ let db=null,auth=null,ready=false,initPromise,offset=0,connected=true,discreet=false,presenceCycle=null,departure=null;
  const now=()=>Date.now()+offset;
  function emit(type,payload,event){if(seen.has(event.id))return;seen.add(event.id);if(seen.size>1000)seen.delete(seen.values().next().value);for(const fn of listeners.get(type)||[])fn(payload,event)}
  function notify(key,value){for(const [path,callbacks] of stateListeners){if(path!==key&&!path.startsWith(key+'/'))continue;let next=value;for(const part of path.slice(key.length+1).split('/').filter(Boolean))next=next?.[part];for(const fn of callbacks)fn(next??null)}}
@@ -12,7 +12,7 @@
  firebase.initializeApp(cfg);auth=firebase.auth();await auth.setPersistence(firebase.auth.Auth.Persistence.NONE);await auth.signInAnonymously();db=firebase.database();ready=true;
  db.ref('.info/serverTimeOffset').on('value',s=>offset=s.val()||0);db.ref('.info/connected').on('value',s=>{connected=s.val()===true;if(!connected)presenceCycle=null;notify('connection',connected)});
  db.ref(base+'/events').orderByChild('at').startAt(now()).on('child_added',s=>{const m=s.val();if(m)emit(m.type,m.payload,m)});
- for(const key of stateListeners.keys())subscribe(key);return true;})()}
+ window.addEventListener?.('pagehide',()=>{if(departure&&!discreet&&cfg.databaseURL){const stamp=firebase.database.ServerValue.TIMESTAMP,patch={};patch['participants/'+clientId]={...departure.value,online:false,at:stamp};patch['history/'+departure.leaveId]={...departure.leave,at:stamp};fetch(cfg.databaseURL.replace(/\/$/,'')+'/'+base+'/state.json?auth='+encodeURIComponent(departure.token),{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify(patch),keepalive:true}).catch(()=>{});}db.goOffline();});window.addEventListener?.('pageshow',e=>{if(e.persisted)db.goOnline()});for(const key of stateListeners.keys())subscribe(key);return true;})()}
  function subscribe(key){if(key==='connection'||key==='error')return;db.ref(base+'/state/'+key).on('value',s=>notify(key,s.val()),error=>notify('error',error.message))}
  async function send(type,payload){const event={id:crypto.randomUUID(),type,payload,at:now(),sender:clientId,authUid:auth?.currentUser?.uid||null};seen.add(event.id);if(ready){await db.ref(base+'/events/'+event.id).set(event);return}channel.postMessage({...event,kind:'event'});emit(type,payload,event)}
  function readLocal(key){try{return JSON.parse(localStorage.getItem("interaura_"+room+"_"+key)||"null")}catch{return null}}
@@ -26,10 +26,10 @@
   if(discreet)return;
   const value={...identity,clientId,authUid:auth?.currentUser?.uid||null,online:true,at:now()};
   const first=!presenceCycle;if(first)presenceCycle={joinId:crypto.randomUUID(),leaveId:crypto.randomUUID()};
-  const cycle=presenceCycle,actor={playerName:identity.playerName,characterName:identity.characterName,clientId,authUid:value.authUid};
+  const cycle=presenceCycle;value.leaveId=cycle.leaveId;const actor={playerName:identity.playerName,characterName:identity.characterName,clientId,authUid:value.authUid};
   const join={...actor,at:now(),text:'CONECTOU-SE À CREDENCIAL IROS',kind:'connection'},leave={...actor,at:now(),text:'DESCONECTOU-SE DA CREDENCIAL IROS',kind:'disconnection'};
   if(ready){
-   const ref=db.ref(base+'/state/participants/'+clientId);
+   departure={value,leave,leaveId:cycle.leaveId,token:await auth.currentUser.getIdToken()};const ref=db.ref(base+'/state/participants/'+clientId);
    await ref.onDisconnect().set({...value,online:false,at:firebase.database.ServerValue.TIMESTAMP});
    if(first)await db.ref(base+'/state/history/'+cycle.leaveId).onDisconnect().set({...leave,at:firebase.database.ServerValue.TIMESTAMP});
    await ref.set(value);

@@ -7,6 +7,9 @@ function setup(){
  const action=async fn=>{try{await fn();$('gm-action-status').textContent='ALTERAÇÃO TRANSMITIDA.'}catch(error){$('gm-action-status').textContent='ERRO: '+error.message}};
  const save=patch=>rt.setState('settings',{...settings,...patch});
  rt.onState('settings',value=>{settings=value||{};$('gm-condition').value=settings.alert||'NORMAL';$('gm-credential-block').checked=!!settings.credentialsBlocked});
+ let presenceRoster={},historyReady=false;const recordedDepartures=new Set(),pendingDepartures=new Set();
+ function reconcileDepartures(){if(!historyReady)return;for(const row of IROSConnectionAudit.departures(presenceRoster,rt.now())){if(recordedDepartures.has(row.id)||pendingDepartures.has(row.id))continue;pendingDepartures.add(row.id);const {id,...entry}=row;rt.transact('history/'+id,current=>current?undefined:entry).then(()=>recordedDepartures.add(id)).catch(()=>{}).finally(()=>pendingDepartures.delete(id));}}
+ rt.onState('participants',value=>{presenceRoster=value||{};reconcileDepartures()});setInterval(reconcileDepartures,5000);
  const cue=document.createElement('audio');cue.id='gm-log-audio';cue.src='assets/embedded/01a59e884507068d.ogg';cue.preload='auto';cue.volume=.1;cue.playbackRate=.72;cue.preservesPitch=false;cue.webkitPreservesPitch=false;host.append(cue);
  let soundEnabled=localStorage.getItem('iros_master_log_sound')!=='off',audioBlocked=false,knownIds=null,lastCue=0;
  const soundButton=$('gm-log-sound');
@@ -14,7 +17,7 @@ function setup(){
  function primeAudio(){if(!soundEnabled)return;cue.muted=true;cue.play().then(()=>{cue.pause();cue.currentTime=0;cue.muted=false;audioBlocked=false;soundLabel()}).catch(()=>{cue.muted=false;audioBlocked=true;soundLabel()});}
  function logCue(){if(!soundEnabled||Date.now()-lastCue<700)return;lastCue=Date.now();cue.muted=false;cue.currentTime=0;cue.play().then(()=>{audioBlocked=false;soundLabel()}).catch(()=>{audioBlocked=true;soundLabel()});}
  soundButton.onclick=()=>{soundEnabled=audioBlocked?true:!soundEnabled;audioBlocked=false;localStorage.setItem('iros_master_log_sound',soundEnabled?'on':'off');if(soundEnabled)primeAudio();else cue.pause();soundLabel();};soundLabel();primeAudio();document.addEventListener('pointerdown',()=>{if(audioBlocked)primeAudio()},{passive:true});
- rt.onState('history',value=>{
+ rt.onState('history',value=>{historyReady=true;for(const [id,row] of Object.entries(value||{})){if(row.kind==='disconnection'){recordedDepartures.add(id);if(row.clientId)recordedDepartures.add('disconnect-'+row.clientId);}}
   const rows=IROSAuditView.rows(value),pane=$('gm-player-history'),first=knownIds===null,previous=knownIds||new Set(),fresh=rows.filter(row=>!previous.has(row.id));knownIds=new Set(Object.keys(value||{}));$('gm-history-count').textContent=rows.length+' registro'+(rows.length===1?'':'s');
   const oldTop=pane.scrollTop,oldHeight=pane.scrollHeight,ids=new Set(rows.map(row=>row.id));for(const child of [...pane.children])if(!ids.has(child.dataset.entry))child.remove();
   for(let i=0;i<rows.length;i++){const row=rows[i];let card=[...pane.children].find(n=>n.dataset.entry===row.id);if(!card){card=document.createElement('article');card.dataset.entry=row.id;card.dataset.kind=IROSAuditView.kind(row.text);card.className='audit-entry'+(IROSAuditView.isMaster(row)?' audit-master':'')+(!first&&fresh.some(n=>n.id===row.id)?' audit-flash':'');const icon=document.createElement('span');icon.className='audit-icon';const glyph=document.createElement('span');glyph.className='iros-pixel-icon '+card.dataset.kind;glyph.setAttribute('aria-hidden','true');icon.append(glyph);const content=document.createElement('div'),meta=document.createElement('div'),actor=document.createElement('b'),time=document.createElement('time'),player=document.createElement('span'),action=document.createElement('div');meta.className='audit-meta';actor.textContent=IROSAuditView.actor(row);time.textContent=new Date(row.at).toLocaleString('pt-BR');meta.append(actor,time);player.className='audit-player';player.textContent=row.playerName?'Player: '+row.playerName:'Registro anterior sem identificação';action.className='audit-action';action.textContent=String(row.text||'');content.append(meta,player,action);card.append(icon,content);}
@@ -22,7 +25,7 @@ function setup(){
   }
   if(!rows.length){const empty=document.createElement('div');empty.className='audit-empty';empty.textContent='Nenhuma atividade registrada.';pane.replaceChildren(empty);}
   if(oldTop>30)pane.scrollTop=oldTop+Math.max(0,pane.scrollHeight-oldHeight);else pane.scrollTop=0;
-  if(!first&&fresh.length)logCue();
+  if(!first&&fresh.length)logCue();reconcileDepartures();
  });
  $('gm-condition-save').onclick=()=>action(()=>save({alert:$('gm-condition').value,blocked:$('gm-condition').value==='BLOQUEIO'}));
  $('gm-credential-save').onclick=()=>action(()=>save({credentialsBlocked:$('gm-credential-block').checked}));
