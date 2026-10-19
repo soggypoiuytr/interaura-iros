@@ -8,8 +8,8 @@ function setup(){
  const save=patch=>rt.setState('settings',{...settings,...patch});
  rt.onState('settings',value=>{settings=value||{};$('gm-condition').value=settings.alert||'NORMAL';$('gm-credential-block').checked=!!settings.credentialsBlocked});
  let presenceRoster={},historyReady=false;const recordedDepartures=new Set(),pendingDepartures=new Set();
- function reconcileDepartures(){if(!historyReady)return;for(const row of IROSConnectionAudit.departures(presenceRoster,rt.now())){if(recordedDepartures.has(row.id)||pendingDepartures.has(row.id))continue;pendingDepartures.add(row.id);const {id,...entry}=row;rt.transact('history/'+id,current=>current?undefined:entry).then(()=>recordedDepartures.add(id)).catch(()=>{}).finally(()=>pendingDepartures.delete(id));}}
- rt.onState('participants',value=>{presenceRoster=value||{};reconcileDepartures()});setInterval(reconcileDepartures,5000);
+ function reconcileDepartures(){if(!historyReady)return;for(const row of IROSConnectionAudit.departures(presenceRoster,rt.now())){if(recordedDepartures.has(row.id)||pendingDepartures.has(row.id))continue;pendingDepartures.add(row.id);const {id,...entry}=row;rt.transact('history/'+id,current=>current?undefined:entry).then(()=>recordedDepartures.add(id)).catch(error=>{const status=$('gm-action-status');status.textContent='FALHA AO REGISTRAR SAÍDA: '+error.message;console.error('IROS registro de saída',error);}).finally(()=>pendingDepartures.delete(id));}}
+ rt.onState('participants',value=>{presenceRoster=value||{};reconcileDepartures()});setInterval(reconcileDepartures,1000);
  const cue=document.createElement('audio');cue.id='gm-log-audio';cue.src='assets/embedded/01a59e884507068d.ogg';cue.preload='auto';cue.volume=.1;cue.playbackRate=.72;cue.preservesPitch=false;cue.webkitPreservesPitch=false;host.append(cue);
  let soundEnabled=localStorage.getItem('iros_master_log_sound')!=='off',audioBlocked=false,knownIds=null,lastCue=0;
  const soundButton=$('gm-log-sound');

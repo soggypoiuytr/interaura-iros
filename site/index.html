@@ -203,7 +203,7 @@ body.crt-transition .shell{animation:crt-channel-shift .22s steps(2,end) 1!impor
 @media(prefers-reduced-motion:reduce){.terminal-window.iim-active::before,.iim-connect-jolt{animation:none}}
 .control-gate{position:fixed;inset:0;z-index:100000;display:grid;place-items:center;background:radial-gradient(circle at 50% 35%,#10231d 0,#030706 48%,#000 100%);color:#a7c8bc;font:12px/1.5 "Courier New",monospace}.control-gate[hidden]{display:none}.control-gate-panel{width:min(520px,calc(100vw - 32px));border:3px ridge #839a91;background:#07120f;box-shadow:0 0 44px #000;padding:18px}.control-gate h1{font:700 18px "Courier New",monospace;color:#d7eee6;letter-spacing:.08em;margin:0 0 8px}.control-gate-status{border:1px dashed #49675c;background:#020806;padding:9px;margin:12px 0;color:#79b9a2}.control-gate label{display:block;margin:9px 0}.control-gate input{display:block;width:100%;margin-top:4px;border:2px inset #9aaba4;background:#010504;color:#9fffd2;padding:8px;font:inherit}.control-gate-actions{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-top:14px}.control-gate button{border:2px outset #dae3df;background:#aebcb6;color:#06100d;padding:8px;font:700 11px "Courier New",monospace;cursor:pointer}.control-gate button:active{border-style:inset}.control-gate small{display:block;margin-top:10px;color:#547167}.observer-lock{position:fixed;left:50%;top:8px;z-index:99999;transform:translateX(-50%);border:1px solid #678b7d;background:rgba(2,10,8,.92);color:#92c8b5;padding:5px 11px;font:10px "Courier New",monospace;pointer-events:none}.observer-lock[hidden]{display:none}.iros-iim-link{position:relative;display:none;place-items:center;width:30px;height:25px;cursor:help}.iros-iim-link.connected{display:grid}.iros-iim-link img{width:23px;height:23px;object-fit:contain;image-rendering:pixelated;filter:contrast(1.12)}.iros-iim-link .iim-link-lamp{position:absolute;right:0;bottom:1px;width:6px;height:6px;border:1px solid #0a251b;background:#64f1a3;box-shadow:0 0 5px #64f1a3}.iros-iim-link.announcing{animation:iim-tray-announce .34s steps(2) infinite}.iros-iim-link .iros-remote-tooltip{right:-38px}.iros-iim-link:hover .iros-remote-tooltip,.iros-iim-link:focus .iros-remote-tooltip,.iros-iim-link.announcing .iros-remote-tooltip{display:block}.iros-iim-link.announcing .iros-remote-tooltip{animation:iim-tooltip-arrival .28s steps(2) 2}@keyframes iim-tray-announce{50%{filter:brightness(2.2);transform:translateY(-1px)}}@keyframes iim-tooltip-arrival{50%{transform:translateX(3px);filter:contrast(1.7)}}
 </style>
-<link rel="stylesheet" href="iros-shared-ui.css?rev=20261019-departures"></head>
+<link rel="stylesheet" href="iros-shared-ui.css?rev=20261019-exit20"></head>
 <body class="startup-active">
   <div class="scanlines" aria-hidden="true"></div>
   <section id="control-gate" class="control-gate" aria-label="Identificação da sessão">
@@ -1328,12 +1328,12 @@ document.querySelectorAll('[data-system-tab]').forEach(button=>button.addEventLi
 loadIrosNotes();refreshTaskButtons();
 
 </script>
-<script src="firebase-config.js?rev=20261019-departures"></script>
-<script src="realtime-core.js?rev=20261019-departures"></script>
-<script src="tray-notice.js?rev=20261019-departures"></script><script src="idle-power.js?rev=20261019-departures"></script>
-<script src="discreet-entry.js?rev=20261019-departures"></script>
-<script src="shared-session.js?rev=20261019-departures"></script><script src="online-sync.js?rev=20261019-departures"></script>
-<script src="presence-ui.js?rev=20261019-departures"></script><script src="session-controls.js?rev=20261019-departures"></script>
+<script src="firebase-config.js?rev=20261019-exit20"></script>
+<script src="realtime-core.js?rev=20261019-exit20"></script>
+<script src="tray-notice.js?rev=20261019-exit20"></script><script src="idle-power.js?rev=20261019-exit20"></script>
+<script src="discreet-entry.js?rev=20261019-exit20"></script>
+<script src="shared-session.js?rev=20261019-exit20"></script><script src="online-sync.js?rev=20261019-exit20"></script>
+<script src="presence-ui.js?rev=20261019-exit20"></script><script src="session-controls.js?rev=20261019-exit20"></script>
 </body>
 </html>
 

@@ -4,8 +4,8 @@ const expired=context.window.IROSIdlePower.expired,power={mode:'on',at:1000},ros
 assert.equal(expired(roster,power,319999),false);
 assert.equal(expired(roster,power,320000),true);
 assert.equal(expired({...roster,c:{online:true,at:319000}},power,320000),false);
-assert.equal(expired({a:{online:true,at:10000}},power,399999),false);
-assert.equal(expired({a:{online:true,at:10000}},power,400000),true);
+assert.equal(expired({a:{online:true,at:10000}},power,329999),false);
+assert.equal(expired({a:{online:true,at:10000}},power,330000),true);
 assert.equal(expired(roster,{mode:'on',at:30000},320000),false,'Não desligar uma inicialização posterior à ausência');
 assert.equal(expired({},power,900000),false);
 assert.equal(expired(roster,{mode:'off',at:0},900000),false);
