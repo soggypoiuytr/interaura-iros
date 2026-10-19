@@ -15,7 +15,7 @@
    let tag=target.querySelector(':scope > .iros-program-users');
    if(!text){tag?.remove();continue;}
    if(!tag){tag=document.createElement('span');tag.className='iros-program-users';if(target.classList.contains('desktop-icon'))target.prepend(tag);else target.append(tag);}
-   if(tag.textContent!==text)tag.textContent=text;tag.title='Em uso por: '+users.join(', ');
+   if(tag.textContent!==text){tag.textContent=text;tag.classList.remove('activity-glitch');void tag.offsetWidth;tag.classList.add('activity-glitch');}tag.title='Em uso por: '+users.join(', ');
   }
  }
  rt.onState('participants',value=>{roster=value||{};draw();});setInterval(draw,1000);
