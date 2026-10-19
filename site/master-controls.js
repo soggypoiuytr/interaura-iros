@@ -10,13 +10,14 @@ function setup(){
  let presenceRoster={},historyReady=false;const recordedDepartures=new Set(),pendingDepartures=new Set();
  function reconcileDepartures(){if(!historyReady)return;for(const row of IROSConnectionAudit.departures(presenceRoster,rt.now())){if(recordedDepartures.has(row.id)||pendingDepartures.has(row.id))continue;pendingDepartures.add(row.id);const {id,...entry}=row;rt.transact('history/'+id,current=>current?undefined:entry).then(()=>recordedDepartures.add(id)).catch(error=>{const status=$('gm-action-status');status.textContent='FALHA AO REGISTRAR SAÍDA: '+error.message;console.error('IROS registro de saída',error);}).finally(()=>pendingDepartures.delete(id));}}
  rt.onState('participants',value=>{presenceRoster=value||{};reconcileDepartures()});setInterval(reconcileDepartures,1000);
- const cue=document.createElement('audio');cue.id='gm-log-audio';cue.src='assets/embedded/01a59e884507068d.ogg';cue.preload='auto';cue.volume=.1;cue.playbackRate=.72;cue.preservesPitch=false;cue.webkitPreservesPitch=false;host.append(cue);
- let soundEnabled=localStorage.getItem('iros_master_log_sound')!=='off',audioBlocked=false,knownIds=null,lastCue=0;
+ function makeCue(id,src,rate,volume){const audio=document.createElement('audio');audio.id=id;audio.src=src;audio.preload='auto';audio.volume=volume;audio.playbackRate=rate;audio.preservesPitch=false;audio.webkitPreservesPitch=false;host.append(audio);return audio;}
+ const cues={log:makeCue('gm-log-audio','assets/embedded/01a59e884507068d.ogg',.72,.1),arrival:makeCue('gm-arrival-audio','assets/audio/recovered/popup.wav',.72,.1),departure:makeCue('gm-departure-audio','assets/audio/recovered/window-close.wav',.60,.1)};
+ let soundEnabled=localStorage.getItem('iros_master_log_sound')!=='off',audioBlocked=false,knownIds=null;const lastCues={};
  const soundButton=$('gm-log-sound');
  function soundLabel(){soundButton.textContent=audioBlocked&&soundEnabled?'SOM: ATIVAR':soundEnabled?'SOM: LIGADO':'SOM: DESLIGADO';soundButton.setAttribute('aria-pressed',String(soundEnabled));}
- function primeAudio(){if(!soundEnabled)return;cue.muted=true;cue.play().then(()=>{cue.pause();cue.currentTime=0;cue.muted=false;audioBlocked=false;soundLabel()}).catch(()=>{cue.muted=false;audioBlocked=true;soundLabel()});}
- function logCue(){if(!soundEnabled||Date.now()-lastCue<700)return;lastCue=Date.now();cue.muted=false;cue.currentTime=0;cue.play().then(()=>{audioBlocked=false;soundLabel()}).catch(()=>{audioBlocked=true;soundLabel()});}
- soundButton.onclick=()=>{soundEnabled=audioBlocked?true:!soundEnabled;audioBlocked=false;localStorage.setItem('iros_master_log_sound',soundEnabled?'on':'off');if(soundEnabled)primeAudio();else cue.pause();soundLabel();};soundLabel();primeAudio();document.addEventListener('pointerdown',()=>{if(audioBlocked)primeAudio()},{passive:true});
+ function primeAudio(){if(!soundEnabled)return;Promise.all(Object.values(cues).map(audio=>{audio.muted=true;return audio.play().then(()=>{audio.pause();audio.currentTime=0;audio.muted=false}).catch(error=>{audio.muted=false;throw error})})).then(()=>{audioBlocked=false;soundLabel()}).catch(()=>{audioBlocked=true;soundLabel()});}
+ function logCue(rows){if(!soundEnabled)return;const kinds=new Set(rows.map(row=>IROSAuditView.cue(row))),presence=[...kinds].filter(kind=>kind!=='log');for(const kind of presence.length?presence:['log']){if(Date.now()-(lastCues[kind]||0)<700)continue;lastCues[kind]=Date.now();const audio=cues[kind];audio.muted=false;audio.currentTime=0;audio.play().then(()=>{audioBlocked=false;soundLabel()}).catch(()=>{audioBlocked=true;soundLabel()});}}
+ soundButton.onclick=()=>{soundEnabled=audioBlocked?true:!soundEnabled;audioBlocked=false;localStorage.setItem('iros_master_log_sound',soundEnabled?'on':'off');if(soundEnabled)primeAudio();else Object.values(cues).forEach(audio=>audio.pause());soundLabel();};soundLabel();primeAudio();document.addEventListener('pointerdown',()=>{if(audioBlocked)primeAudio()},{passive:true});
  let historyValue={},hideMaster=localStorage.getItem('iros_hide_master_history')!=='off';$('gm-hide-master').checked=hideMaster;$('gm-hide-master').onchange=()=>{hideMaster=$('gm-hide-master').checked;localStorage.setItem('iros_hide_master_history',hideMaster?'on':'off');renderHistory(historyValue)};
  function renderHistory(value){historyReady=true;for(const [id,row] of Object.entries(value||{})){if(row.kind==='disconnection'){recordedDepartures.add(id);if(row.clientId)recordedDepartures.add('disconnect-'+row.clientId);}}
   const rows=IROSAuditView.rows(value,hideMaster),pane=$('gm-player-history'),first=knownIds===null,previous=knownIds||new Set(),fresh=rows.filter(row=>!previous.has(row.id));knownIds=new Set(Object.keys(value||{}));const hidden=hideMaster?Object.values(value||{}).filter(IROSAuditView.isMaster).length:0;$('gm-history-count').textContent=rows.length+' registro'+(rows.length===1?'':'s')+(hidden?' · '+hidden+' do mestre ocultos':'');
@@ -26,7 +27,7 @@ function setup(){
   }
   if(!rows.length){const empty=document.createElement('div');empty.className='audit-empty';empty.textContent=hideMaster?'Nenhuma atividade de jogador neste filtro.':'Nenhuma atividade registrada.';pane.replaceChildren(empty);}
   if(oldTop>30)pane.scrollTop=oldTop+Math.max(0,pane.scrollHeight-oldHeight);else pane.scrollTop=0;
-  if(!first&&fresh.length)logCue();reconcileDepartures();
+  if(!first&&fresh.length)logCue(fresh);reconcileDepartures();
  }
  rt.onState('history',value=>{historyValue=value||{};renderHistory(historyValue)});
  $('gm-condition-save').onclick=()=>action(()=>save({alert:$('gm-condition').value,blocked:$('gm-condition').value==='BLOQUEIO'}));
