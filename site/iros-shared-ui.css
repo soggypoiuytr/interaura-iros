@@ -91,3 +91,5 @@ body.desktop-mode .iros-app-window.processing-enter,body.desktop-mode #app-conte
 @media(prefers-reduced-motion:reduce){.terminal-death-status,.terminal-death-status::after{animation:none}.terminal-death-status{text-shadow:1px 0 #00d9cf,-1px 0 #ff2020}}
 
 .audit-note-details{margin-top:8px;border-top:1px dotted #426653;padding-top:5px;font-size:11px;min-width:0}.audit-note-details summary{cursor:pointer;color:#b3dbbd;padding:3px 0}.audit-note-details p{white-space:pre-wrap;color:#9ab9a6;margin:5px 0}.audit-note-details b{display:block;font-size:10px;margin-top:8px;color:#a9c9b3}.audit-note-details pre{white-space:pre-wrap;overflow-wrap:anywhere;max-height:220px;overflow:auto;background:#030d08;border:1px solid #294b38;padding:8px;color:#c3d9c8;font:11px/1.5 "Courier New",monospace;margin:4px 0 9px}.audit-note-details pre.note-added{border-left:3px solid #7eaf83;color:#b7dfba}.audit-note-details pre.note-removed{border-left:3px solid #b17f7f;color:#dfb6b3}
+
+.iros-media-notice{top:36px;max-width:calc(100vw - 24px);width:max-content;text-align:center;line-height:1.4;background:rgba(2,10,8,.78);color:#a2c6ba;font-size:9px;padding:4px 9px;overflow-wrap:anywhere}

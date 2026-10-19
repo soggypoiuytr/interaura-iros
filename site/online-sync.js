@@ -2,6 +2,7 @@
  'use strict';
  const rt=window.InterauraRealtime,model=window.IROSSharedSession;if(!rt||!model)return;await rt.init();
  const $=id=>document.getElementById(id),startupTemplate=$('startup-screen').cloneNode(true),gate=$('control-gate'),form=$('control-claim-form'),status=$('control-gate-status'),label=$('observer-lock'),out=$('terminal-output');
+ const mediaNotice=document.createElement('div');mediaNotice.id='iros-media-notice';mediaNotice.className='observer-lock iros-media-notice';mediaNotice.hidden=true;mediaNotice.setAttribute('role','status');label.insertAdjacentElement('afterend',mediaNotice);
  let activeProgram='';
  let entered=false,settings={},session=null,power=null,cable=false,lastEpoch=null,lastPhase='',rendered=new Set(),ready=false;
  let noteBaseline={},lastNotes='';const pendingNoteWrites=new Map();
@@ -80,6 +81,7 @@
  }
  function tick(){
   if(!entered||!session)return;renderPower();const stage=phase();
+  const media=session.media,mediaElapsed=media?Math.max(0,(rt.now()-media.at)/1000):0,mediaActive=stage==='desktop'&&media?.playing&&rt.now()>=media.at&&(media.position||0)+mediaElapsed<32.5;mediaNotice.hidden=!mediaActive;if(mediaActive){const name=media.byPlayer||media.by||'sessão remota',text='saudade_de_você.wav está sendo tocado por '+name;if(mediaNotice.textContent!==text)mediaNotice.textContent=text;}
   const notesHash=JSON.stringify(session.notes||{});if(notesHash!==lastNotes){lastNotes=notesHash;const active=irosNotes.find(n=>n.id===activeNoteId),dirty=active&&(pendingNoteWrites.has(active.id)||noteText.value!==active.text||normalizeNoteTitle(noteTitle.value)!==active.title);noteBaseline=JSON.parse(notesHash);if(session.notes){irosNotes=Object.values(session.notes);if(dirty){irosNotes=irosNotes.filter(n=>n.id!==active.id);irosNotes.push(active);}if(!irosNotes.some(n=>n.id===activeNoteId))activeNoteId=irosNotes[0]?.id||null;renderIrosNotes();if(!dirty)loadActiveNote();}}
   Object.assign(iimState,{mode:!!session.iim?.mode&&cable,module:session.iim?.mode&&cable?'07':null,ocularActive:!!session.iim?.ocular,connecting:false});setIimInterface(iimState.mode);input.disabled=false;
   if(stage!=='desktop')return;
