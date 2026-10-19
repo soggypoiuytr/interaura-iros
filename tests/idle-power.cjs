@@ -1,0 +1,12 @@
+const fs=require('fs'),vm=require('vm'),assert=require('assert/strict');
+const context={window:{}};vm.createContext(context);vm.runInContext(fs.readFileSync('site/idle-power.js','utf8'),context);
+const expired=context.window.IROSIdlePower.expired,power={mode:'on',at:1000},roster={a:{online:false,at:10000},b:{online:false,at:20000}};
+assert.equal(expired(roster,power,319999),false);
+assert.equal(expired(roster,power,320000),true);
+assert.equal(expired({...roster,c:{online:true,at:319000}},power,320000),false);
+assert.equal(expired({a:{online:true,at:10000}},power,399999),false);
+assert.equal(expired({a:{online:true,at:10000}},power,400000),true);
+assert.equal(expired(roster,{mode:'on',at:30000},320000),false,'Não desligar uma inicialização posterior à ausência');
+assert.equal(expired({},power,900000),false);
+assert.equal(expired(roster,{mode:'off',at:0},900000),false);
+console.log('PASS: cinco minutos após última saída, presença ativa impede desligamento, conexão perdida tem tolerância e nova inicialização é preservada.');

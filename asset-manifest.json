@@ -290,5 +290,13 @@
   "assets/icons/users-present-iros.png": {
     "bytes": 762393,
     "sha256": "fc9f52c14f88758ee654014fb47a584fca65dc6a2f28722ed0bb8635974a4a85"
+  },
+  "assets/icons/shutdown-iros.png": {
+    "bytes": 643980,
+    "sha256": "a3952e4a90bc2b2b736126ed0648c6ca9c1ae3716805be171ecf900f30fb6960"
+  },
+  "assets/icons/restart-iros.png": {
+    "bytes": 682280,
+    "sha256": "c2533a2dae6debda5966d151d6c528950915e83737596bbb564a39070375a200"
   }
 }

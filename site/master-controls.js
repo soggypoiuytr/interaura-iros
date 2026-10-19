@@ -7,7 +7,7 @@ function setup(){
  const action=async fn=>{try{await fn();$('gm-action-status').textContent='ALTERAÇÃO TRANSMITIDA.'}catch(error){$('gm-action-status').textContent='ERRO: '+error.message}};
  const save=patch=>rt.setState('settings',{...settings,...patch});
  rt.onState('settings',value=>{settings=value||{};$('gm-condition').value=settings.alert||'NORMAL';$('gm-credential-block').checked=!!settings.credentialsBlocked});
- const cue=document.createElement('audio');cue.id='gm-log-audio';cue.src='assets/embedded/01a59e884507068d.ogg';cue.preload='auto';cue.volume=.1;host.append(cue);
+ const cue=document.createElement('audio');cue.id='gm-log-audio';cue.src='assets/embedded/01a59e884507068d.ogg';cue.preload='auto';cue.volume=.1;cue.playbackRate=.72;cue.preservesPitch=false;cue.webkitPreservesPitch=false;host.append(cue);
  let soundEnabled=localStorage.getItem('iros_master_log_sound')!=='off',audioBlocked=false,knownIds=null,lastCue=0;
  const soundButton=$('gm-log-sound');
  function soundLabel(){soundButton.textContent=audioBlocked&&soundEnabled?'SOM: ATIVAR':soundEnabled?'SOM: LIGADO':'SOM: DESLIGADO';soundButton.setAttribute('aria-pressed',String(soundEnabled));}

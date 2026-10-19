@@ -17,3 +17,35 @@
 .presence-button img{display:block;width:24px;height:24px;object-fit:contain;image-rendering:pixelated}
 
 .presence-button.announcing{animation:iim-tray-announce .34s steps(2) infinite}
+
+/* Shared geometry keeps menu labels and tray symbols on a fixed baseline. */
+#iros-start-menu{width:242px;max-height:calc(100dvh - 48px);overflow-y:auto}
+#iros-start-menu header{font:700 12px/1.4 "Courier New",monospace;padding:9px 12px}
+#iros-start-menu button{display:grid;grid-template-columns:28px minmax(0,1fr);align-items:center;justify-content:start;gap:10px;min-height:39px;padding:5px 12px;text-align:left;text-decoration:none;line-height:1.2}
+#iros-start-menu .menu-pixel-icon{margin:0;width:28px;height:28px;justify-self:center;flex:none}
+#iros-start-menu .menu-power-icon{display:block;width:26px;height:26px;object-fit:contain;image-rendering:pixelated;justify-self:center}
+#iros-start-menu small{font-size:9px}
+.iros-tray{height:28px;align-items:center;gap:4px;padding:0 5px;flex-shrink:0}
+.iros-remote-link,.iros-iim-link,.iros-presence,.presence-button{height:24px;min-width:28px;padding:0;align-items:center;justify-content:center}
+.iros-remote-link .menu-pixel-icon{display:block;margin:0;width:24px;height:24px;background-size:72px 72px;background-position:0 0}
+.iros-iim-link img,.presence-button img{display:block;width:24px;height:24px;object-fit:contain;image-rendering:pixelated}
+.iros-quick-launch{align-items:center;gap:2px}
+.iros-quick-launch button{display:grid;place-items:center;width:28px;height:26px;padding:0}
+.iros-quick-launch .iros-pixel-icon{margin:0;flex:none}
+.presence-button{gap:2px}.iros-clock{align-self:center;line-height:16px;padding:3px 5px}
+.iros-remote-tooltip,.iros-tray-balloon{border:1px solid #53594d;border-radius:7px;background:#ffffdf;color:#16201a;box-shadow:2px 3px 4px #0007;padding:10px 12px;font:11px/1.4 Tahoma,Arial,sans-serif;text-shadow:none;white-space:normal;text-transform:none;text-align:left}
+.iros-remote-tooltip{width:230px;bottom:37px;right:-10px;overflow:visible}
+.iros-remote-tooltip::after{content:"";position:absolute;right:18px;bottom:-8px;width:14px;height:14px;background:#ffffdf;border-right:1px solid #53594d;border-bottom:1px solid #53594d;transform:skewY(35deg)}
+.presence-list{margin-top:7px}.presence-list li+li{border-top:1px solid #cfd1b6}.presence-list b{font-weight:700}.presence-list span{color:#4a5444;font-size:10px}
+.iros-iim-link.announcing .iros-remote-tooltip{display:none}
+.iros-iim-link.announcing:hover .iros-remote-tooltip,.iros-iim-link.announcing:focus .iros-remote-tooltip{display:block}
+.iros-tray-balloon{position:fixed;z-index:95000;width:min(285px,calc(100vw - 16px));padding-right:30px;animation:iros-balloon-arrival .18s ease-out}
+.iros-tray-balloon::after{content:"";position:absolute;left:var(--balloon-tail,240px);bottom:-9px;width:15px;height:15px;background:#ffffdf;border-right:1px solid #53594d;border-bottom:1px solid #53594d;transform:skewY(35deg)}
+.iros-tray-balloon strong{display:block;font-size:11px}.iros-tray-balloon p{margin:5px 0 0}.iros-tray-balloon button{position:absolute;right:5px;top:4px;width:17px;height:17px;border:1px solid #c6c9a9;border-radius:3px;background:transparent;color:#73795e;padding:0;font:14px/14px Arial;cursor:pointer}
+@keyframes iros-balloon-arrival{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:none}}
+@media(prefers-reduced-motion:reduce){.iros-tray-balloon,.presence-button.announcing{animation:none}}
+
+#iros-start-menu .menu-pixel-icon{background-size:84px 84px}#iros-start-menu .network{background-position:0 0}#iros-start-menu .files{background-position:-28px 0}#iros-start-menu .terminal{background-position:-56px 0}#iros-start-menu .camera{background-position:0 -28px}#iros-start-menu .notes{background-position:-28px -28px}#iros-start-menu .mine{background-position:-56px -28px}#iros-start-menu .solitaire{background-position:0 -56px}#iros-start-menu .system{background-position:-28px -56px}
+.iros-quick-launch .iros-pixel-icon{background-size:72px 72px}.iros-quick-launch .iros-pixel-icon.network{background-position:0 0}.iros-quick-launch .iros-pixel-icon.files{background-position:-24px 0}.iros-quick-launch .iros-pixel-icon.notes{background-position:-24px -24px}.iros-quick-launch .iros-pixel-icon.terminal{background-position:-48px 0}
+
+.iros-tray-balloon.leaving{animation:iros-balloon-leave .14s ease-in forwards;pointer-events:none}@keyframes iros-balloon-leave{from{opacity:1;transform:none}to{opacity:0;transform:translateY(3px)}}@media(prefers-reduced-motion:reduce){.iros-tray-balloon.leaving{animation:none;opacity:0}}
