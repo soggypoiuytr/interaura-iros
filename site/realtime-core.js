@@ -1,7 +1,7 @@
 (function(){
  const room=(new URLSearchParams(location.search).get('sala')||window.INTERAURA_ROOM||'int-jp-04').replace(/[^a-zA-Z0-9_-]/g,'').slice(0,60)||'int-jp-04',base='irosRooms/'+room,clientId='cli-'+crypto.randomUUID();
  const channel=new BroadcastChannel('interaura-'+room),listeners=new Map(),stateListeners=new Map(),seen=new Set();
- let db=null,auth=null,ready=false,initPromise,offset=0,connected=true;
+ let db=null,auth=null,ready=false,initPromise,offset=0,connected=true,discreet=false;
  const now=()=>Date.now()+offset;
  function emit(type,payload,event){if(seen.has(event.id))return;seen.add(event.id);if(seen.size>1000)seen.delete(seen.values().next().value);for(const fn of listeners.get(type)||[])fn(payload,event)}
  function notify(key,value){for(const [path,callbacks] of stateListeners){if(path!==key&&!path.startsWith(key+'/'))continue;let next=value;for(const part of path.slice(key.length+1).split('/').filter(Boolean))next=next?.[part];for(const fn of callbacks)fn(next??null)}}
@@ -20,8 +20,9 @@
  async function transact(key,fn){if(ready){const r=await db.ref(base+'/state/'+key).transaction(fn,undefined,false);return r.committed?r.snapshot.val():null}return navigator.locks.request('iros-'+room+'-'+key,async()=>{const next=fn(await getState(key));if(next===undefined)return null;await setState(key,next);return next})}
  const on=(type,fn)=>{if(!listeners.has(type))listeners.set(type,[]);listeners.get(type).push(fn)};
  const onState=(key,fn)=>{if(key==='connection'||key==='error'){if(!stateListeners.has(key))stateListeners.set(key,[]);stateListeners.get(key).push(fn);if(key==='connection')fn(connected);return;}const first=!stateListeners.has(key);if(first)stateListeners.set(key,[]);stateListeners.get(key).push(fn);if(ready){if(first)subscribe(key);}else getState(key).then(fn).catch(e=>notify('error',e.message));};
- async function setPresence(identity){const value={...identity,clientId,authUid:auth?.currentUser?.uid||null,online:true,at:now()};if(ready){const ref=db.ref(base+'/state/participants/'+clientId);await ref.onDisconnect().set({...value,online:false,at:firebase.database.ServerValue.TIMESTAMP});await ref.set(value);}else await setState('participants/'+clientId,value);}
- window.InterauraRealtime={room,clientId,init,transact,setPresence,send,setState,getState,on,onState,now,get connected(){return connected},get firebaseReady(){return ready},get db(){return db},get auth(){return auth}};
+ async function enableDiscreet(email,password){if(!ready)throw Error("O modo discreto exige conexão com o Firebase.");try{await auth.signInWithEmailAndPassword(email,password);const allowed=(await db.ref("masters/"+auth.currentUser.uid).once("value")).val()===true;if(!allowed)throw Error("Conta sem autorização de mestre.");discreet=true;}catch(error){discreet=false;await auth.signInAnonymously();throw Error("Não foi possível autorizar a conta de mestre.");}}
+ async function setPresence(identity){if(discreet)return;const value={...identity,clientId,authUid:auth?.currentUser?.uid||null,online:true,at:now()};if(ready){const ref=db.ref(base+'/state/participants/'+clientId);await ref.onDisconnect().set({...value,online:false,at:firebase.database.ServerValue.TIMESTAMP});await ref.set(value);}else await setState('participants/'+clientId,value);}
+ window.InterauraRealtime={room,clientId,init,enableDiscreet,get discreet(){return discreet},transact,setPresence,send,setState,getState,on,onState,now,get connected(){return connected},get firebaseReady(){return ready},get db(){return db},get auth(){return auth}};
 })();
 
 
