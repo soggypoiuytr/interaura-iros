@@ -12,7 +12,8 @@ window.IROS_IIM_TEXT={"connected":"RESPOSTA DA UNIDADE IIM RECEBIDA.\n\nIDENTIDA
    if(op.kind==='on'&&s.power.mode!=='off')return;
    if(op.kind!=='off'){s.entries={};s.recover=0;}
    const shutdownMs=op.kind==='on'?0:Math.max(3500,Math.min(30000,op.shutdownMs||6500));
-   s.power={mode:op.kind==='off'?'off':'on',epoch:op.id,at:op.at+(op.kind==='restart'?shutdownMs:0),postMs:op.postMs||7600,splashMs:op.splashMs||5200,shutdownAt:op.kind==='on'?0:op.at,shutdownMs};
+   const revision=(s.power.revision||0)+1;
+   s.power={revision,mode:op.kind==='off'?'off':'on',epoch:op.id,at:op.at+(op.kind==='restart'?shutdownMs:0),postMs:op.postMs||7600,splashMs:op.splashMs||5200,shutdownAt:op.kind==='on'?0:op.at,shutdownMs};
    s.iim={mode:false,ocular:false};delete s.request;return s;
   }
   if(op.kind==='login'){if(s.power.mode!=='on'||s.power.loginAt)return;s.power.loginAt=op.at;return s;}

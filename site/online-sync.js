@@ -1,14 +1,15 @@
 (async function(){
  'use strict';
  const rt=window.InterauraRealtime,model=window.IROSSharedSession;if(!rt||!model)return;await rt.init();
- const $=id=>document.getElementById(id),gate=$('control-gate'),form=$('control-claim-form'),status=$('control-gate-status'),label=$('observer-lock'),out=$('terminal-output');
- let entered=false,settings={},session=null,cable=false,lastEpoch=null,lastPhase='',rendered=new Set(),ready=false;
+ const $=id=>document.getElementById(id),startupTemplate=$('startup-screen').cloneNode(true),gate=$('control-gate'),form=$('control-claim-form'),status=$('control-gate-status'),label=$('observer-lock'),out=$('terminal-output');
+ let entered=false,settings={},session=null,power=null,cable=false,lastEpoch=null,lastPhase='',rendered=new Set(),ready=false;
  let noteBaseline={},lastNotes='';
  let identity;try{identity=JSON.parse(sessionStorage.getItem('iros_identity')||'null')}catch{}
+ if(appContent.parentElement!==irosDesktop)irosDesktop.append(appContent);
  const canInteract=()=>entered&&rt.connected&&phase()!=='shutdown'&&!settings.blocked&&!settings.credentialsBlocked;
  window.IROSTable={isController:canInteract,isApplying:()=>false,refresh:()=>{},recordAction,get settings(){return settings}};
  let lastHistory={text:'',at:0};
- function recordAction(text){if(!canInteract())return Promise.resolve();const at=rt.now(),value=String(text).slice(0,500);if(lastHistory.text===value&&at-lastHistory.at<650)return Promise.resolve();lastHistory={text:value,at};return rt.setState('history/'+crypto.randomUUID(),{at,text:value,playerName:identity.playerName,characterName:identity.characterName,clientId:rt.clientId,authUid:rt.auth?.currentUser?.uid||null}).catch(()=>{});}
+ function recordAction(text,committed=false){if(!entered||!rt.connected||(!committed&&!canInteract()))return Promise.resolve();const at=rt.now(),value=String(text).slice(0,500);if(lastHistory.text===value&&at-lastHistory.at<650)return Promise.resolve();lastHistory={text:value,at};return rt.setState('history/'+crypto.randomUUID(),{at,text:value,playerName:identity.playerName,characterName:identity.characterName,clientId:rt.clientId,authUid:rt.auth?.currentUser?.uid||null}).catch(()=>{});}
  const originalArchive=openArchiveRow;openArchiveRow=function(row){recordAction('ARQUIVO: '+(row.dataset.file||row.querySelector('button')?.textContent||'NÃO IDENTIFICADO'));return originalArchive(row)};
  const fail=error=>{status.hidden=false;status.textContent='NÃO FOI POSSÍVEL SINCRONIZAR // '+error.message;label.hidden=false;label.textContent=status.textContent;};
  function evaluate(command,s){
@@ -19,14 +20,14 @@
  async function act(kind,extra={}){
   if(!canInteract())return;
   const op={kind,id:crypto.randomUUID(),at:rt.now(),identity,...extra};
-  try{const result=await rt.transact('session',s=>model.reduce(s,op,evaluate));if(result){const action=kind==='command'?'COMANDO: '+extra.command:({on:'LIGOU O COMPUTADOR',off:'DESLIGOU O COMPUTADOR',restart:'REINICIOU O COMPUTADOR',login:'AUTENTICOU A SESSÃO IROS',notes:'SALVOU ANOTAÇÕES'})[kind];if(action)recordAction(action);}return result;}catch(error){fail(error);throw error}
+  try{const result=await rt.transact('session',s=>model.reduce(s,op,evaluate));if(result){const action=kind==='command'?'COMANDO: '+extra.command:({on:'LIGOU O COMPUTADOR',off:'DESLIGOU O COMPUTADOR',restart:'REINICIOU O COMPUTADOR',login:'AUTENTICOU A SESSÃO IROS',notes:'SALVOU ANOTAÇÕES'})[kind];if(action)recordAction(action,true);}return result;}catch(error){fail(error);throw error}
  }
  function clean(html){const t=document.createElement('template');t.innerHTML=html||'';t.content.querySelectorAll('script,iframe,object,embed,style,link,audio,video').forEach(n=>n.remove());for(const el of t.content.querySelectorAll('*'))for(const a of [...el.attributes])if(a.name.startsWith('on')||a.name==='srcdoc'||/^(?:javascript|data):/i.test(a.value))el.removeAttribute(a.name);t.content.querySelectorAll('.terminal-response').forEach(n=>n.dataset.revealed='true');return t.content;}
- function phase(){const p=session?.power;if(p?.shutdownAt&&rt.now()<p.shutdownAt+p.shutdownMs)return'shutdown';if(!p||p.mode==='off')return'off';const age=rt.now()-p.at;if(age<p.postMs)return'post';if(age<p.postMs+p.splashMs+420)return'splash';if(!p.loginAt)return'login';return rt.now()<p.loginAt+4000?'boot':'desktop';}
+ function phase(){const p=power||session?.power;if(p?.shutdownAt&&rt.now()<p.shutdownAt+p.shutdownMs)return'shutdown';if(!p||p.mode==='off')return'off';const age=rt.now()-p.at;if(age<p.postMs)return'post';if(age<p.postMs+p.splashMs+420)return'splash';if(!p.loginAt)return'login';return rt.now()<p.loginAt+4000?'boot':'desktop';}
  function reset(){
-  stopAllAudio();shutdownAudio.pause();computerPoweredOn=false;interfaceSoundsReady=false;ambienceEligible=false;booting=false;
+  stopAllAudio();shutdownAudio.pause();if(!$('startup-screen'))document.body.append(startupTemplate.cloneNode(true));document.querySelectorAll('[data-power-dialog]').forEach(el=>el.dispatchEvent(new Event('iros-power-reset')));computerPoweredOn=false;interfaceSoundsReady=false;ambienceEligible=false;booting=false;
   $('startup-screen').classList.remove('finished');$('power-prompt').classList.remove('hidden');$('startup-post').classList.remove('active');$('startup-splash').classList.remove('active');
-  document.body.classList.remove('desktop-mode');document.body.classList.add('startup-active');$('iros-desktop').classList.remove('active');$('iros-desktop').setAttribute('aria-hidden','true');
+  document.body.classList.remove('desktop-mode');document.body.classList.add('startup-active');$('iros-desktop').classList.remove('active');$('iros-desktop').setAttribute('aria-hidden','true');appContent.classList.add('app-locked');appContent.setAttribute('aria-hidden','true');
   loginScreen.classList.remove('authenticated','hidden');loginScreen.classList.add('startup-wait');bootScreen.classList.remove('active','complete');
   for(const el of document.querySelectorAll('.iros-app-window'))el.classList.remove('open','minimized','maximized');
   $('iros-start-menu').classList.remove('open');document.querySelector('#login-form button[type=submit]').disabled=false;loginError.textContent='';$('login-pass').value='';
@@ -37,7 +38,7 @@
  const tracks=[shutdownAudio,powerOnAudio,irosStartupAudio,loginAudio,jingleAudio,interfaceAudio,computerLoopAudio];
  function musicTick(force=false){
   if(!entered)return;
-  const p=session?.power,stage=phase();let audio=null,at=0,volume=.5;
+  const p=power||session?.power,stage=phase();let audio=null,at=0,volume=.5;
   if(p&&stage==='shutdown'){audio=shutdownAudio;at=p.shutdownAt;volume=.78;}
   else if(p&&stage==='boot'){audio=powerOnAudio;const duration=Number.isFinite(powerOnAudio.duration)?powerOnAudio.duration:(p.postMs||7600)/1000;const offset=Math.min(duration*.46,duration-.5);at=p.loginAt-offset*1000;volume=.28;}
   else if(p&&stage==='post'){audio=powerOnAudio;at=p.at;volume=.82;}
@@ -55,10 +56,12 @@
   if(audio.paused)audio.play().catch(()=>{});
  }
  for(const audio of tracks)audio.addEventListener('loadedmetadata',()=>musicTick(true));
- function tick(){
-  if(!entered||!session)return;
-  const p=session.power,stage=phase();
-  if(p.epoch!==lastEpoch){lastEpoch=p.epoch;reset();}
+ function renderPower(){
+  if(!entered||!power)return;
+  const p=power,stage=phase();
+  if(p.epoch!==lastEpoch){reset();lastEpoch=p.epoch;}
+  const isStartup=['off','post','splash','shutdown'].includes(stage);$('startup-screen').classList.toggle('finished',!isStartup);$('shutdown-screen').hidden=stage!=='shutdown';
+  document.body.dataset.irosPhase=stage;document.body.classList.toggle('desktop-mode',stage==='desktop');$('iros-desktop').classList.toggle('active',stage==='desktop');$('iros-desktop').setAttribute('aria-hidden',String(stage!=='desktop'));
   if(stage!==lastPhase){
    lastPhase=stage;computerPoweredOn=stage!=='off';
    $('power-prompt').classList.toggle('hidden',stage!=='off');$('startup-post').classList.toggle('active',stage==='post');$('startup-splash').classList.toggle('active',stage==='splash');$('startup-splash').setAttribute('aria-hidden',String(stage!=='splash'));
@@ -72,6 +75,9 @@
   if(stage==='post'){const progress=(rt.now()-p.at)/p.postMs;document.querySelectorAll('#post-lines p').forEach((el,i,all)=>el.classList.toggle('visible',progress>.08+i*.72/all.length));$('post-command').classList.toggle('visible',progress>.82);}
   if(stage==='splash')document.querySelectorAll('#iros-steps p').forEach((el,i,all)=>el.classList.toggle('visible',rt.now()-p.at-p.postMs>350+i*p.splashMs*.68/all.length));
   if(stage==='boot'){const progress=Math.min(100,Math.floor((rt.now()-p.loginAt)/40));$('boot-progress-bar').style.width=progress+'%';$('boot-percent').textContent=progress+'% // RECONSTRUINDO SESSÃO';document.querySelectorAll('#boot-log p').forEach(el=>el.classList.add('visible'));}
+ }
+ function tick(){
+  if(!entered||!session)return;renderPower();const stage=phase();
   const notesHash=JSON.stringify(session.notes||{});if(notesHash!==lastNotes){lastNotes=notesHash;const active=irosNotes.find(n=>n.id===activeNoteId),dirty=active&&(noteText.value!==active.text||normalizeNoteTitle(noteTitle.value)!==active.title);noteBaseline=JSON.parse(notesHash);if(session.notes){irosNotes=Object.values(session.notes);if(dirty){irosNotes=irosNotes.filter(n=>n.id!==active.id);irosNotes.push(active);}if(!irosNotes.some(n=>n.id===activeNoteId))activeNoteId=irosNotes[0]?.id||null;renderIrosNotes();if(!dirty)loadActiveNote();}}
   Object.assign(iimState,{mode:!!session.iim?.mode&&cable,module:session.iim?.mode&&cable?'07':null,ocularActive:!!session.iim?.ocular,connecting:false});setIimInterface(iimState.mode);input.disabled=false;
   if(stage!=='desktop')return;
@@ -86,18 +92,20 @@
   }
   ready=true;
  }
+ function acceptPower(value){const next=value||model.initial().power;if(power&&((next.revision||0)<(power.revision||0)||((next.revision||0)===(power.revision||0)&&next.epoch!==power.epoch&&next.at<power.at)))return;power=next;renderPower();}
  rt.onState('session',value=>{session=value||model.initial();tick()});
+ rt.onState('session/power',acceptPower);
  rt.onState('settings',value=>{settings=value||{};window.dispatchEvent(new CustomEvent('iros-settings',{detail:settings}));});
  rt.onState('error',message=>fail(Error(message)));
- rt.onState('connection',connected=>{if(!connected){label.hidden=false;label.textContent='CONEXÃO INTERROMPIDA // AGUARDANDO RECONEXÃO';}else if(entered){label.hidden=false;label.textContent='SESSÃO COMPARTILHADA // INTERAÇÃO LIVRE';}else label.hidden=true;});
+ rt.onState('connection',connected=>{if(!connected){label.hidden=false;label.textContent='CONEXÃO INTERROMPIDA // AGUARDANDO RECONEXÃO';}else if(entered){presence();label.hidden=false;label.textContent='SESSÃO COMPARTILHADA // INTERAÇÃO LIVRE';}else label.hidden=true;});
  rt.onState('iimCable',value=>{const changed=cable!==!!value?.connected;cable=!!value?.connected;window.interauraCableConnected=cable;const icon=$('iros-iim-link');icon?.classList.toggle('connected',cable);if(changed&&cable&&entered&&phase()==='desktop'){icon?.classList.add('announcing');setTimeout(()=>icon?.classList.remove('announcing'),6500);window.IROSLocalCue?.($('iim-connected-audio'),.62);}if(!cable){Object.assign(iimState,{mode:false,module:null,ocularActive:false});setIimInterface(false);}});
  form.querySelector('button[type=submit]').disabled=false;status.textContent='SESSÃO DISPONÍVEL // INTERAÇÃO LIVRE';
  if(identity){$('control-player').value=identity.playerName||'';$('control-character').value=identity.characterName||'';}
  form.addEventListener('submit',e=>{e.preventDefault();e.stopPropagation();if(entered)return;identity={characterName:$('control-character').value.trim(),playerName:$('control-player').value.trim()};if(!identity.characterName||!identity.playerName)return;sessionStorage.setItem('iros_identity',JSON.stringify(identity));entered=true;gate.classList.add('enter-glitch');gate.setAttribute('aria-busy','true');setTimeout(()=>{gate.hidden=true;gate.setAttribute('aria-busy','false')},window.matchMedia('(prefers-reduced-motion: reduce)').matches?150:600);label.hidden=false;label.textContent='SESSÃO COMPARTILHADA // INTERAÇÃO LIVRE';const cue=$('confirm-audio');cue.volume=0;cue.play().then(()=>{cue.pause();cue.currentTime=0}).catch(()=>{});tick();musicTick(true);presence();});
- function presence(){if(entered)rt.setState('participants/'+rt.clientId,{...identity,authUid:rt.auth?.currentUser?.uid||null,at:rt.now()}).catch(fail);}
+ function presence(){if(entered&&rt.connected)rt.setPresence(identity).catch(fail);}
  setInterval(presence,15000);
  const localPersist=persistIrosNotes;persistIrosNotes=function(){localPersist();if(!canInteract())return;const local=Object.fromEntries(irosNotes.map(n=>[n.id,n])),patch={};for(const [id,note] of Object.entries(local))if(JSON.stringify(note)!==JSON.stringify(noteBaseline[id]))patch[id]=note;for(const id of Object.keys(noteBaseline))if(!local[id])patch[id]=null;if(Object.keys(patch).length)act('notes',{patch}).then(()=>noteStatus.textContent='SALVO // SESSÃO COMPARTILHADA').catch(()=>noteStatus.textContent='FALHA DE SINCRONIZAÇÃO // CÓPIA LOCAL PRESERVADA');};
- function confirmPower(kind){return new Promise(resolve=>{const overlay=document.createElement('div');overlay.className='control-gate';overlay.style.background='#0009';overlay.innerHTML='<section class="control-gate-panel" role="dialog" aria-modal="true" aria-labelledby="power-confirm-title"><h1 id="power-confirm-title">'+(kind==='off'?'DESLIGAR':'REINICIAR')+' IROS</h1><p>Esta ação afeta o computador de todos os participantes.</p><button type="button" data-confirm>CONFIRMAR</button> <button type="button" data-cancel>CANCELAR</button></section>';document.body.append(overlay);function finish(value){overlay.remove();resolve(value)}overlay.querySelector('[data-confirm]').onclick=()=>finish(true);overlay.querySelector('[data-cancel]').onclick=()=>finish(false);overlay.querySelector('[data-cancel]').focus();});}
+ function confirmPower(kind){return new Promise(resolve=>{const overlay=document.createElement('div');overlay.className='control-gate';overlay.dataset.powerDialog='true';overlay.style.background='#0009';overlay.innerHTML='<section class="control-gate-panel" role="dialog" aria-modal="true" aria-labelledby="power-confirm-title"><h1 id="power-confirm-title">'+(kind==='off'?'DESLIGAR':'REINICIAR')+' IROS</h1><p>Esta ação afeta o computador de todos os participantes.</p><button type="button" data-confirm>CONFIRMAR</button> <button type="button" data-cancel>CANCELAR</button></section>';document.body.append(overlay);function finish(value){overlay.remove();resolve(value)}overlay.addEventListener('iros-power-reset',()=>finish(false),{once:true});overlay.querySelector('[data-confirm]').onclick=()=>finish(true);overlay.querySelector('[data-cancel]').onclick=()=>finish(false);overlay.querySelector('[data-cancel]').focus();});}
  document.addEventListener('click',async e=>{
   const button=e.target.closest('#power-button,[data-power]');if(!button)return;e.preventDefault();e.stopImmediatePropagation();if(!canInteract())return;
   const kind=button.dataset.power||'on';if(kind!=='on'&&!await confirmPower(kind))return;
@@ -116,7 +124,7 @@
  },true);
  // Connection loss and administrative suspension block writes, never other participants' scrolling.
  document.addEventListener('click',e=>{if(!entered||canInteract()||e.target.closest('#control-gate,.audio-controls'))return;if(e.target.closest('button,a')){e.preventDefault();e.stopImmediatePropagation();}},true);
- document.addEventListener('pointerdown',()=>musicTick(),{passive:true});document.addEventListener('visibilitychange',()=>{if(!document.hidden){tick();musicTick(true)}});
+ document.addEventListener('pointerdown',()=>musicTick(),{passive:true});document.addEventListener('visibilitychange',()=>{if(!document.hidden){rt.getState('session/power').then(value=>{acceptPower(value);musicTick(true)}).catch(fail);presence();}});
  document.addEventListener('click',e=>{if(!canInteract())return;const target=e.target.closest('[data-open-app],.archive-row,[data-view-link]');if(target)recordAction('ACESSO: '+(target.dataset.file||target.dataset.openApp||target.textContent.trim()));},true);
- setInterval(tick,200);setInterval(musicTick,2000);
+ setInterval(renderPower,200);setInterval(tick,250);setInterval(musicTick,2000);
 })().catch(error=>{document.querySelector('#control-gate-status').hidden=false;document.querySelector('#control-gate-status').textContent='CONEXÃO NÃO DISPONÍVEL // '+error.message;console.error('IROS',error)});
