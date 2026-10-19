@@ -49,6 +49,6 @@
  }
  $('mine-reset').onclick=reset;$('mine-new').onclick=reset;
  $('mine-flag-mode').onclick=()=>{markMode=!markMode;$('mine-flag-mode').setAttribute('aria-pressed',String(markMode));$('mine-message').textContent=markMode?'MARCAÇÃO ATIVA // CLIQUE PARA COLOCAR OU TIRAR BANDEIRA.':'ABRIR: CLIQUE // BANDEIRA: DIREITO OU F';};
- new MutationObserver(()=>{if(document.body.dataset.irosPhase!=='desktop')reset();}).observe(document.body,{attributes:true,attributeFilter:['data-iros-phase']});
+ let lastPowerPhase=document.body.dataset.irosPhase;new MutationObserver(()=>{const phase=document.body.dataset.irosPhase;if(phase===lastPowerPhase)return;lastPowerPhase=phase;if(phase!=='desktop')reset();}).observe(document.body,{attributes:true,attributeFilter:['data-iros-phase']});
  reset();
 })(typeof window==='undefined'?globalThis:window);
