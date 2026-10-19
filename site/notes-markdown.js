@@ -26,12 +26,12 @@
  const editor=document.querySelector('.notepad-editor'),text=document.getElementById('notepad-text');if(!editor||!text)return;
  const bar=document.createElement('div');bar.className='notepad-formatbar';bar.setAttribute('aria-label','Formatação da anotação');
  const modes=document.createElement('div');modes.className='notepad-modebar';
- modes.innerHTML='<button type="button" data-note-mode="edit" aria-pressed="true">EDITAR</button><button type="button" data-note-mode="read" aria-pressed="false">VISUALIZAR</button><button type="button" data-note-help aria-expanded="false">AJUDA</button>';
+ modes.innerHTML='<button type="button" data-note-mode="read" aria-pressed="true">VISUALIZAR</button><button type="button" data-note-mode="edit" aria-pressed="false">EDITAR</button><button type="button" data-note-help aria-expanded="false">AJUDA</button>';
  const tools=[['bold','N','Negrito — **texto**'],['italic','I','Itálico — *texto*'],['strike','RISCAR','Riscado — ~~texto~~'],['heading','TÍTULO','Título — ## texto'],['quote','CITAÇÃO','Citação — > texto'],['list','LISTA','Lista — - item'],['task','TAREFA','Tarefa — - [ ] item'],['code','CÓDIGO','Código — `texto`']];
  for(const [kind,label,title] of tools){const button=document.createElement('button');button.type='button';button.dataset.noteFormat=kind;button.textContent=label;button.title=title;button.setAttribute('aria-label',title);bar.append(button)}
  const preview=document.createElement('article');preview.id='notepad-preview';preview.className='notepad-preview';preview.hidden=true;preview.setAttribute('aria-label','Anotação formatada');
  const help=document.createElement('div');help.className='notepad-markdown-help';help.hidden=true;help.textContent='## Título · **negrito** · *itálico* · ~~riscado~~\n> Citação (comece cada linha com >)\n- Item · 1. Item · - [ ] Pendente · - [x] Concluído\n`código` · três crases para um bloco · --- para separar\nUse VISUALIZAR para ler com formatação. SALVAR compartilha o texto com todos.';
- text.before(modes,bar,help);text.after(preview);let mode='edit';
+ text.before(modes,bar,help);text.after(preview);let mode='read';
  function refresh(){if(mode==='read')preview.innerHTML=render(text.value)||'<p class="note-empty">ARQUIVO VAZIO</p>'}
  function setMode(next){mode=next;text.hidden=mode==='read';preview.hidden=mode!=='read';bar.hidden=mode==='read';for(const b of modes.querySelectorAll('[data-note-mode]'))b.setAttribute('aria-pressed',String(b.dataset.noteMode===mode));refresh()}
  modes.addEventListener('click',e=>{const button=e.target.closest('button');if(!button)return;if(button.dataset.noteMode)setMode(button.dataset.noteMode);else{help.hidden=!help.hidden;button.setAttribute('aria-expanded',String(!help.hidden))}});
@@ -46,4 +46,5 @@
  const originalLoad=loadActiveNote;loadActiveNote=function(){const result=originalLoad();refresh();return result};
  document.getElementById('note-new').addEventListener('click',()=>setMode('edit'),true);
  for(const id of ['note-save','note-delete','note-rename'])document.getElementById(id).addEventListener('click',()=>setTimeout(refresh,0));
+ setMode('read');
 })(typeof window==='undefined'?globalThis:window);
