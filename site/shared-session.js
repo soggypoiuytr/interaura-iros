@@ -35,7 +35,11 @@ window.IROS_IIM_TEXT={"connected":"RESPOSTA DA UNIDADE IIM RECEBIDA.\n\nIDENTIDA
   if(!command)return;
   if(c==='CLEAR'){s.entries={};append('',0,op.id,command);return s;}
   let html;
-  if(!op.cable&&(/^IIM(?: |$)/.test(c)||s.iim.mode))html=text('ERRO IIM-01 // INTERFACE NÃO DETECTADA\nO CABO FÍSICO DA IIM NÃO ESTÁ CONECTADO AO COMPUTADOR.','error');
+  if(/^SAY TO KRYTUX(?:\s|$)/i.test(command)){
+   const message=command.replace(/^SAY TO KRYTUX\s*/i,'').trim();
+   html=message?text('CANAL KRYTUX // MENSAGEM ENVIADA\n\n'+message+'\n\nAGUARDANDO RESPOSTA DE KRYTUX.\nA RESPOSTA SERÁ TRANSMITIDA QUANDO O CANAL ESTIVER DISPONÍVEL.','secret'):text('USO: say to krytux <mensagem>','warning');
+  }
+  else if(!op.cable&&(/^IIM(?: |$)/.test(c)||s.iim.mode))html=text('ERRO IIM-01 // INTERFACE NÃO DETECTADA\nO CABO FÍSICO DA IIM NÃO ESTÁ CONECTADO AO COMPUTADOR.','error');
   else if((!s.iim.mode&&/^IIM CONNECT MOD-0?7$/.test(c))||(s.iim.mode&&c==='OCULAR ACTIVATE'&&!s.iim.ocular)){
    if(s.request?.status==='pending')html=text('A PORTA IIM ESTÁ OCUPADA. AGUARDANDO RESPOSTA DA UNIDADE.','warning');
    else {s.request={id:op.id,command:s.iim.mode?'OCULAR ACTIVATE':'IIM CONNECT MOD-07',module:'07',requestedBy:op.identity,createdAt:op.at,status:'pending'};html=text('IIM // SOLICITAÇÃO TRANSMITIDA\nPORTA FÍSICA: DETECTADA\nAGUARDANDO CONFIRMAÇÃO DA UNIDADE IIM...','iim-warning');}
