@@ -79,3 +79,10 @@ body.desktop-mode .iros-app-window.processing-enter,body.desktop-mode #app-conte
 @media(prefers-reduced-motion:reduce){.iros-program-users.activity-glitch{animation:none}}
 
 .iros-program-users{pointer-events:auto;cursor:default}
+
+/* A permanent caption lane prevents presence labels covering any sprite. */
+.desktop-icon{padding-top:18px;min-height:95px}.desktop-icon>.iros-program-users{top:1px;max-width:calc(100% + 8px)}
+
+.desktop-icon{display:flex;flex-direction:column;align-items:center;justify-content:flex-start;gap:5px}.desktop-icon>.iros-pixel-icon,.desktop-icon>.iros-audio-file-icon,.desktop-icon>.chat-desktop-icon{flex:0 0 46px;margin:0}
+.desktop-icon>.iros-program-users{overflow:visible;max-width:108px}.desktop-icon>.iros-program-users::after{content:"";position:absolute;left:50%;bottom:-3px;transform:translateX(-50%);border-left:3px solid transparent;border-right:3px solid transparent;border-top:3px solid #8caf9e}
+.desktop-icons{column-gap:22px}

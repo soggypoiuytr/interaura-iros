@@ -1,6 +1,6 @@
 window.IROSProgramActivity={
  group(roster,now){const apps=new Map();for(const p of Object.values(roster||{})){if(p.online===false||!Number.isFinite(p.at)||now-p.at>20000||!p.activeApp)continue;if(!apps.has(p.activeApp))apps.set(p.activeApp,new Set());apps.get(p.activeApp).add(p.characterName||p.playerName||'Usuario');}return apps;},
- label(users){if(!users.length)return '';const suffix=' \u00b7 vendo',short=(name,max)=>Array.from(name).length>max?Array.from(name).slice(0,max-1).join('')+'\u2026':name;const all=users.join(', ')+suffix;if(Array.from(all).length<=19)return all;if(users.length===1)return short(users[0],11)+suffix;const count=' +'+(users.length-1);return short(users[0],19-count.length-suffix.length)+count+suffix;}
+ label(users){if(!users.length)return '';const suffix=users.length>1?' vendo':' \u00b7 vendo',short=(name,max)=>Array.from(name).length>max?Array.from(name).slice(0,max-1).join('')+'\u2026':name;const all=users.join(', ')+suffix;if(Array.from(all).length<=17)return all;if(users.length===1)return short(users[0],9)+suffix;const count=' +'+(users.length-1);return short(users[0],17-count.length-suffix.length)+count+suffix;}
 };
 (async function(){
  'use strict';
