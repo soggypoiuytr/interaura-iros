@@ -88,6 +88,7 @@
   for(const row of rows){if(rendered.has(row.id)||row.at>rt.now())continue;rendered.add(row.id);const nearBottom=out.scrollHeight-out.scrollTop-out.clientHeight<70;const el=document.createElement('div');el.className='terminal-entry';el.dataset.sharedEntry=row.id;
    if(row.command&&row.command.toUpperCase()!=='CLEAR'){const cmd=document.createElement('div');cmd.className='terminal-command';cmd.textContent=(session.iim?.mode?'C:\\IIM\\MOD-07>':'C:\\INTERAURA>')+' '+row.command;const author=row.by==='Observador'||row.byPlayer==='/mestre'?'':row.by||row.byPlayer;if(author){const badge=document.createElement('span');badge.className='terminal-command-author';badge.textContent=' ('+author+')';cmd.append(badge);}el.append(cmd);}
    el.append(clean(row.html));const next=[...out.children].find(n=>{const r=session.entries[n.dataset.sharedEntry];return r&&(r.at>row.at||(r.at===row.at&&r.seq>row.seq))});out.insertBefore(el,next||null);
+   el.querySelectorAll('.terminal-death-status').forEach(node=>node.style.setProperty('--death-fault-delay','-'+Math.max(0,rt.now()-row.at)%4700+'ms'));
    el.querySelectorAll('.terminal-response').forEach(node=>revealTerminalResponse(node,{at:row.at,id:row.id,now:()=>rt.now()}));
    if(nearBottom)out.scrollTop=out.scrollHeight;
    if(ready&&rt.connected&&rt.now()-row.at<2000&&row.html){playTransientSound(terminalReturnSounds[row.seq%terminalReturnSounds.length],.34);if(/^(MOD-01|MÓDULO-01)$/i.test(row.command)){out.classList.add('terminal-neural-fault');setTimeout(()=>out.classList.remove('terminal-neural-fault'),3200);}}
