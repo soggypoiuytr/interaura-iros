@@ -286,5 +286,9 @@
   "assets/audio/windows-nt4-shutdown.mp3": {
     "bytes": 248938,
     "sha256": "3bd9954819dad6829d7f9fc8a9c697d79a98c8cdc2204126a28257e7b8916a4f"
+  },
+  "assets/icons/users-present-iros.png": {
+    "bytes": 762393,
+    "sha256": "fc9f52c14f88758ee654014fb47a584fca65dc6a2f28722ed0bb8635974a4a85"
   }
 }
