@@ -8,13 +8,14 @@ window.IROS_IIM_TEXT={"connected":"RESPOSTA DA UNIDADE IIM RECEBIDA.\n\nIDENTIDA
   s.entries ||= {};s.iim ||= {mode:false,ocular:false};
   if(s.entries[op.id])return;
   function append(html,delay=0,id=op.id,command=''){s.entries[id]={id,seq:++s.seq,at:op.at+delay,html,command,by:op.identity?.characterName||''};const rows=Object.values(s.entries).sort((a,b)=>a.seq-b.seq);for(const row of rows.slice(0,-200))delete s.entries[row.id];}
+  if(op.kind==='media'){if(s.power.mode!=='on'||!s.power.loginAt)return;s.media={playing:!!op.playing,position:Math.max(0,Math.min(32.5,Number(op.position)||0)),at:op.at,by:op.identity?.characterName||''};return s;}
   if(['on','off','restart'].includes(op.kind)){
    if(op.kind==='on'&&s.power.mode!=='off')return;
    if(op.kind!=='off'){s.entries={};s.recover=0;}
    const shutdownMs=op.kind==='on'?0:Math.max(3500,Math.min(30000,op.shutdownMs||6500));
    const revision=(s.power.revision||0)+1;
    s.power={revision,mode:op.kind==='off'?'off':'on',epoch:op.id,at:op.at+(op.kind==='restart'?shutdownMs:0),postMs:op.postMs||7600,splashMs:op.splashMs||5200,shutdownAt:op.kind==='on'?0:op.at,shutdownMs};
-   s.iim={mode:false,ocular:false};delete s.request;return s;
+   s.iim={mode:false,ocular:false};delete s.media;delete s.request;return s;
   }
   if(op.kind==='login'){if(s.power.mode!=='on'||s.power.loginAt)return;s.power.loginAt=op.at;return s;}
   if(op.kind==='cable-off'){s.iim={mode:false,ocular:false};delete s.request;return s;}

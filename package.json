@@ -2,6 +2,6 @@
   "name": "interaura-iros",
   "private": true,
   "scripts": {
-    "test": "node tests/integrity.cjs && node tests/rules.cjs && node tests/realtime.cjs && node tests/power.cjs && node tests/presentation.cjs && node tests/history.cjs && node tests/energy-presence.cjs && node tests/realtime-subscriptions.cjs && node tests/idle-power.cjs && node tests/connection-audit.cjs"
+    "test": "node tests/integrity.cjs && node tests/rules.cjs && node tests/realtime.cjs && node tests/power.cjs && node tests/presentation.cjs && node tests/history.cjs && node tests/energy-presence.cjs && node tests/realtime-subscriptions.cjs && node tests/idle-power.cjs && node tests/connection-audit.cjs && node tests/recovered-media.cjs"
   }
 }

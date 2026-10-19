@@ -298,5 +298,41 @@
   "assets/icons/restart-iros.png": {
     "bytes": 682280,
     "sha256": "c2533a2dae6debda5966d151d6c528950915e83737596bbb564a39070375a200"
+  },
+  "assets/audio/recovered/boot-extra.wav": {
+    "bytes": 1411244,
+    "sha256": "5cd67921cc6f3dd0643935d314d76a9029134c3e219bec385ad4434cacc16171"
+  },
+  "assets/audio/recovered/error.wav": {
+    "bytes": 88244,
+    "sha256": "cd6ec921aaaee1001910db548e57a8b76407768271774252d4c71fb991a37658"
+  },
+  "assets/audio/recovered/file-close.wav": {
+    "bytes": 176444,
+    "sha256": "ac11a6942c82a90637db51c95857e2c06b3895ea659d0c8e70855efc56bcddbd"
+  },
+  "assets/audio/recovered/file-open.wav": {
+    "bytes": 176444,
+    "sha256": "f7a9ef69df1ed1497ffb906d683e07f0314a0c0d3127ca3c70d9d7c364a29eb2"
+  },
+  "assets/audio/recovered/popup.wav": {
+    "bytes": 44144,
+    "sha256": "60cf3349e3f37969f143b848fbca2c8cbbdff0e74eba531b50f5f7768eb09359"
+  },
+  "assets/audio/recovered/saudade-de-voce.wav": {
+    "bytes": 5733044,
+    "sha256": "ed5a586b599ec6bf2202510dd16835963db7621871aac2059315bb0a87816122"
+  },
+  "assets/audio/recovered/window-close.wav": {
+    "bytes": 105884,
+    "sha256": "113fde7cecc14b8da5487d329f98b4b6bed34a14061acf8875c9577ff996693c"
+  },
+  "assets/audio/recovered/window-open.wav": {
+    "bytes": 211724,
+    "sha256": "18459b01ee7c3b37d6f84c86d4726dbdce4b22e0af2c147cff0f7b79c8f1a521"
+  },
+  "assets/icons/chat-interno-iros.png": {
+    "bytes": 830419,
+    "sha256": "7b2d82e2c266e2b2c3f2d20a5b886649952b7f01058cecafa011068ff1df41bc"
   }
 }
