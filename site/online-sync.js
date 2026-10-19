@@ -64,18 +64,18 @@
   const isStartup=['off','post','splash','shutdown'].includes(stage);$('startup-screen').classList.toggle('finished',!isStartup);$('shutdown-screen').hidden=stage!=='shutdown';
   document.body.dataset.irosPhase=stage;document.body.classList.toggle('desktop-mode',stage==='desktop');$('iros-desktop').classList.toggle('active',stage==='desktop');$('iros-desktop').setAttribute('aria-hidden',String(stage!=='desktop'));
   if(stage!==lastPhase){
-   lastPhase=stage;computerPoweredOn=stage!=='off';
+   const previousStage=lastPhase;lastPhase=stage;computerPoweredOn=stage!=='off';
    $('power-prompt').classList.toggle('hidden',stage!=='off');$('startup-post').classList.toggle('active',stage==='post');$('startup-splash').classList.toggle('active',stage==='splash');$('startup-splash').setAttribute('aria-hidden',String(stage!=='splash'));
    $('shutdown-screen').hidden=stage!=='shutdown';
    const startup=['off','post','splash','shutdown'].includes(stage);$('startup-screen').classList.toggle('finished',!startup);document.body.classList.toggle('startup-active',startup);loginScreen.classList.toggle('startup-wait',startup);
    if(stage==='boot'){window.IROSLocalCue?.(loginSuccessAudio,.82);loginScreen.classList.add('authenticated');bootScreen.classList.add('active');bootScreen.setAttribute('aria-hidden','false');}
-   if(stage==='desktop'){unlock(false);interfaceSoundsReady=true;bootScreen.classList.remove('active');bootScreen.setAttribute('aria-hidden','true');}
+   if(stage==='desktop'){if(previousStage==='boot'){bootScreen.classList.add('session-glitch-exit');setTimeout(()=>bootScreen.classList.remove('session-glitch-exit'),480);}unlock(false);interfaceSoundsReady=true;bootScreen.classList.remove('active');bootScreen.setAttribute('aria-hidden','true');}
    musicTick(true);
   }
   if(stage==='shutdown'){const progress=Math.min(1,Math.max(0,(rt.now()-p.shutdownAt)/p.shutdownMs));$('shutdown-label').textContent=p.mode==='off'?'Desligando...':'Reiniciando...';document.querySelectorAll('#shutdown-steps p').forEach((el,i,rows)=>{el.classList.toggle('visible',progress>.04+i*.7/rows.length);el.querySelector('i').textContent=progress>.18+i*.7/rows.length?'[ OK ]':'[ .. ]';});}
   if(stage==='post'){const progress=(rt.now()-p.at)/p.postMs;document.querySelectorAll('#post-lines p').forEach((el,i,all)=>el.classList.toggle('visible',progress>.08+i*.72/all.length));$('post-command').classList.toggle('visible',progress>.82);}
   if(stage==='splash')document.querySelectorAll('#iros-steps p').forEach((el,i,all)=>el.classList.toggle('visible',rt.now()-p.at-p.postMs>350+i*p.splashMs*.68/all.length));
-  if(stage==='boot'){const progress=Math.min(100,Math.floor((rt.now()-p.loginAt)/40));$('boot-progress-bar').style.width=progress+'%';$('boot-percent').textContent=progress+'% // RECONSTRUINDO SESSÃO';document.querySelectorAll('#boot-log p').forEach(el=>el.classList.add('visible'));}
+  if(stage==='boot'){const elapsed=Math.max(0,rt.now()-p.loginAt),steps=[[0,0],[180,8],[600,19],[1200,38],[2100,58],[2850,81],[3550,96],[3850,100]],progress=steps.filter(([at])=>elapsed>=at).at(-1)[1];$('boot-progress-bar').style.width=progress+'%';$('boot-percent').textContent=progress+'% // RECONSTRUINDO SESSÃO';document.querySelectorAll('#boot-log p').forEach((el,i)=>el.classList.toggle('visible',elapsed>=[180,600,1200,2100,2850,3550][i]));}
  }
  function tick(){
   if(!entered||!session)return;renderPower();const stage=phase();
