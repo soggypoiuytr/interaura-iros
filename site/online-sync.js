@@ -14,6 +14,7 @@
  let lastHistory={text:'',at:0};
  function recordAction(text,committed=false,detail={}){if(!entered||!rt.connected||(!committed&&!canInteract()))return Promise.resolve();const at=rt.now(),value=String(text).slice(0,500);if(!detail.note&&lastHistory.text===value&&at-lastHistory.at<650)return Promise.resolve();lastHistory={text:value,at};return rt.setState('history/'+crypto.randomUUID(),{at,text:value,...detail,playerName:identity.playerName,characterName:identity.characterName,clientId:rt.clientId,authUid:rt.auth?.currentUser?.uid||null}).catch(()=>{});}
  const originalArchive=openArchiveRow;openArchiveRow=function(row){recordAction('ARQUIVO: '+(row.dataset.file==='recovered-song'?'saudade_de_você.wav':row.dataset.file||row.querySelector('button')?.textContent||'NÃO IDENTIFICADO'));return originalArchive(row)};
+ const originalModule=showModule;showModule=function(id){const result=originalModule(id);recordAction('CONSULTOU MOD-'+String(id).padStart(2,'0')+' // BANCO DE MÓDULOS');return result;};
  const fail=error=>{status.hidden=false;status.textContent='NÃO FOI POSSÍVEL SINCRONIZAR // '+error.message;label.hidden=false;label.textContent=status.textContent;};
  function evaluate(command,s){
   const previous={...iimState},recover=terminalRecoverAttempts;
