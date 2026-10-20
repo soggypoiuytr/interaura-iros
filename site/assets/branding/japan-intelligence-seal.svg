@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE svg
+  PUBLIC '-//W3C//DTD SVG 1.0//EN'
+  'http://www.w3.org/TR/2001/REC-SVG-20010904/DTD/svg10.dtd'>
+<svg width="100" height="100" preserveAspectRatio="xMinYMin meet" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" version="1.0" fill-rule="evenodd" xmlns:xlink="http://www.w3.org/1999/xlink">
+	<title>...</title>
+	<desc>...</desc>
+	<clipPath id="clip">
+		<rect x="0" y="0" width="100" height="100"/>
+	</clipPath>
+	<g id="group" transform="scale(1,-1) translate(0,-100)" style="clip-path: url(#clip)">
+		<g transform="">
+			<circle cx="50" cy="50" r="46" style="stroke: rgb(16%,14%,12%); stroke-linecap: butt; stroke-width: 1.5; fill: none; fill-rule: evenodd;"/>
+			<circle cx="50" cy="50" r="42" style="stroke: rgb(16%,14%,12%); stroke-linecap: butt; stroke-width: 0.7; fill: none; fill-rule: evenodd;"/>
+			<circle cx="50" cy="50" r="29" style="stroke: rgb(16%,14%,12%); stroke-linecap: butt; stroke-width: 1; fill: none; fill-rule: evenodd;"/>
+			<path d="M 81,50 L 88,50 Z" style="stroke: rgb(16%,14%,12%); stroke-linecap: butt; stroke-width: 1.2;"/>
+			<path d="M 78.640266,61.863186 L 85.107422,64.54197 Z" style="stroke: rgb(16%,14%,12%); stroke-linecap: butt; stroke-width: 1.2;"/>
+			<path d="M 71.92031,71.92031 L 76.870058,76.870058 Z" style="stroke: rgb(16%,14%,12%); stroke-linecap: butt; stroke-width: 1.2;"/>
+			<path d="M 61.863186,78.640266 L 64.54197,85.107422 Z" style="stroke: rgb(16%,14%,12%); stroke-linecap: butt; stroke-width: 1.2;"/>
+			<path d="M 50,81 L 50,88 Z" style="stroke: rgb(16%,14%,12%); stroke-linecap: butt; stroke-width: 1.2;"/>
+			<path d="M 38.136814,78.640266 L 35.45803,85.107422 Z" style="stroke: rgb(16%,14%,12%); stroke-linecap: butt; stroke-width: 1.2;"/>
+			<path d="M 28.07969,71.92031 L 23.129942,76.870058 Z" style="stroke: rgb(16%,14%,12%); stroke-linecap: butt; stroke-width: 1.2;"/>
+			<path d="M 21.359734,61.863186 L 14.892578,64.54197 Z" style="stroke: rgb(16%,14%,12%); stroke-linecap: butt; stroke-width: 1.2;"/>
+			<path d="M 19,50 L 12,50 Z" style="stroke: rgb(16%,14%,12%); stroke-linecap: butt; stroke-width: 1.2;"/>
+			<path d="M 21.359734,38.136814 L 14.892578,35.45803 Z" style="stroke: rgb(16%,14%,12%); stroke-linecap: butt; stroke-width: 1.2;"/>
+			<path d="M 28.07969,28.07969 L 23.129942,23.129942 Z" style="stroke: rgb(16%,14%,12%); stroke-linecap: butt; stroke-width: 1.2;"/>
+			<path d="M 38.136814,21.359734 L 35.45803,14.892578 Z" style="stroke: rgb(16%,14%,12%); stroke-linecap: butt; stroke-width: 1.2;"/>
+			<path d="M 50,19 L 50,12 Z" style="stroke: rgb(16%,14%,12%); stroke-linecap: butt; stroke-width: 1.2;"/>
+			<path d="M 61.863186,21.359734 L 64.54197,14.892578 Z" style="stroke: rgb(16%,14%,12%); stroke-linecap: butt; stroke-width: 1.2;"/>
+			<path d="M 71.92031,28.07969 L 76.870058,23.129942 Z" style="stroke: rgb(16%,14%,12%); stroke-linecap: butt; stroke-width: 1.2;"/>
+			<path d="M 78.640266,38.136814 L 85.107422,35.45803 Z" style="stroke: rgb(16%,14%,12%); stroke-linecap: butt; stroke-width: 1.2;"/>
+			<path d="M 25 50 C 38 68 62 68 75 50 C 62 32 38 32 25 50 Z " style="stroke: rgb(16%,14%,12%); stroke-linecap: butt; stroke-width: 2; fill: none; fill-rule: evenodd;"/>
+			<circle cx="50" cy="50" r="8" style="stroke: none; stroke-linecap: butt; stroke-width: 1; fill: rgb(16%,14%,12%); fill-rule: evenodd;"/>
+			<text x="40.25" y="18" style="font-family: Courier-Bold; font-size: 6.5px;fill: rgb(16%,14%,12%); stroke:none;" transform="translate(0,36) scale(1,-1)">JAPAN</text>
+			<text x="33.08" y="77" style="font-family: Courier-Bold; font-size: 4.7px;fill: rgb(16%,14%,12%); stroke:none;" transform="translate(0,154) scale(1,-1)">INTELLIGENCE</text>
+		</g>
+	</g>
+</svg>

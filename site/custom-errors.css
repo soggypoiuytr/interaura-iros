@@ -1,0 +1,16 @@
+.custom-system-error[hidden]{display:none!important}
+.custom-system-error{position:fixed;z-index:30000;left:50%;top:50%;transform:translate(-50%,-50%);width:min(470px,calc(100vw - 24px));max-height:calc(100vh - 24px);overflow:auto;color:#07100d;font-family:"Courier New",monospace}
+.custom-system-error .program-error{width:100%;margin:0;border:3px outset #b6c5bf;background:repeating-linear-gradient(0deg,#00000012 0 1px,#ffffff12 1px 2px),#9aa9a3;color:#07100d;box-shadow:7px 7px #000}
+.custom-system-error .program-error header{display:flex;align-items:center;gap:9px;border:0;background:repeating-linear-gradient(0deg,#00000019 0 1px,transparent 1px 3px),#54100d;color:#fff;padding:6px 8px;font:700 11px/1.4 "Courier New",monospace;overflow-wrap:anywhere}
+.custom-system-error .program-error .iros-pixel-icon{flex:0 0 38px;width:38px;height:38px;margin:0;background-size:114px 114px;background-position:-76px -76px}
+.custom-system-error .program-error section{padding:17px;font:12px/1.5 "Courier New",monospace;overflow-wrap:anywhere}
+.custom-system-error .program-error section>b,.custom-system-error .program-error p,.custom-system-error .program-error code{white-space:pre-wrap}
+.custom-system-error .program-error code{display:block;margin:10px 0;padding:8px;background:#07100d;color:#efb36d;border:2px inset #c5d0cc;font:11px/1.5 "Courier New",monospace}
+.custom-system-error .program-error code[hidden],.custom-system-error .program-error p[hidden]{display:none}
+.custom-system-error .program-error footer{display:flex;justify-content:flex-end;gap:7px;padding:0 12px 12px}
+.custom-system-error .program-error button{border:2px outset #dce5e1;background:#b2c0bb;color:#07100d;padding:6px 12px;font:700 10px "Courier New",monospace;cursor:pointer;margin:0}
+.custom-system-error .program-error button:active{border-style:inset}
+.custom-system-error.error-arriving .program-error{animation:custom-error-arrive .24s steps(2,end)}
+@keyframes custom-error-arrive{0%{opacity:.25;translate:-3px 1px}45%{opacity:.8;translate:2px -1px}100%{opacity:1;translate:0 0}}
+#custom-error-form textarea{min-height:75px}#custom-error-form .custom-error-status{font-size:12px;color:#e9c66d}
+@media(prefers-reduced-motion:reduce){.custom-system-error.error-arriving .program-error{animation:none}}

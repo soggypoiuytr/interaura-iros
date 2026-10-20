@@ -1,0 +1,12 @@
+const fs=require('fs'),vm=require('vm'),assert=require('assert/strict');const context={};vm.createContext(context);vm.runInContext(fs.readFileSync('site/custom-errors.js','utf8'),context);const {normalize,eligible}=context.IROSCustomErrors;
+const power={mode:'on',loginAt:100,epoch:'boot'},event={id:'test',at:1000,epoch:'boot'};
+assert(eligible(event,power,1100,500));
+assert(!eligible(event,{...power,mode:'off'},1100,500));
+assert(!eligible(event,{...power,epoch:'restarted'},1100,500));
+assert(!eligible(event,{...power,loginAt:0},1100,500));
+assert(!eligible(event,power,121001,500));
+assert(!eligible(event,power,1100,5000),'Não reproduzir erro histórico ao abrir outra sessão');
+assert(!eligible({...event,at:10000},power,1100,500),'Não adiantar evento futuro');
+const text=normalize({title:' a ',headline:'b',body:'x'.repeat(3000),code:'<script>teste</script>',footer:'fim',html:'ignorar'});assert.equal(text.title,'a');assert.equal(text.body.length,2000);assert.equal(text.code,'<script>teste</script>');assert(!('html' in text));
+const source=fs.readFileSync('site/custom-errors.js','utf8');assert(source.includes(".textContent=data[key]"));assert(source.includes("rt.transact('settings'"));const rules=JSON.parse(fs.readFileSync('site/database.rules.json','utf8'));assert(rules.rules.irosRooms.$room.state.settings['.write'].includes("child('masters')"));
+console.log('PASS: erro customizado, limites, texto inerte, mestre protegido, sessão autenticada, reinício e histórico sem repetição.');
