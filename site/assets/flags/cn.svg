@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE svg
+  PUBLIC '-//W3C//DTD SVG 1.0//EN'
+  'http://www.w3.org/TR/2001/REC-SVG-20010904/DTD/svg10.dtd'>
+<svg width="90" height="60" preserveAspectRatio="xMinYMin meet" viewBox="0 0 90 60" xmlns="http://www.w3.org/2000/svg" version="1.0" fill-rule="evenodd" xmlns:xlink="http://www.w3.org/1999/xlink">
+	<title>...</title>
+	<desc>...</desc>
+	<clipPath id="clip">
+		<rect x="0" y="0" width="90" height="60"/>
+	</clipPath>
+	<g id="group" transform="scale(1,-1) translate(0,-60)" style="clip-path: url(#clip)">
+		<g transform="">
+			<rect x="0" y="0" width="90" height="60" style="stroke: none; stroke-linecap: butt; stroke-width: 1; fill: rgb(100%,100%,100%); fill-rule: evenodd;"/>
+			<rect x="0" y="0" width="90" height="60" style="stroke: none; stroke-linecap: butt; stroke-width: 1; fill: rgb(87%,16%,6%); fill-rule: evenodd;"/>
+			<polygon points="16 53, 13.88397 46.91246, 7.440491 46.78115, 12.5762 42.88754, 10.70993 36.71885, 16 40.4, 21.29007 36.71885, 19.4238 42.88754, 24.55951 46.78115, 18.11603 46.91246" style="stroke: none; stroke-linecap: butt; stroke-width: 1; fill: rgb(100%,87%,0%); fill-rule: evenodd;"/>
+			<polygon points="30 55, 29.29466 52.97082, 27.14683 52.92705, 28.85873 51.62918, 28.23664 49.57295, 30 50.8, 31.76336 49.57295, 31.14127 51.62918, 32.85317 52.92705, 30.70534 52.97082" style="stroke: none; stroke-linecap: butt; stroke-width: 1; fill: rgb(100%,87%,0%); fill-rule: evenodd;"/>
+			<polygon points="36 46, 35.29466 43.97082, 33.14683 43.92705, 34.85873 42.62918, 34.23664 40.57295, 36 41.8, 37.76336 40.57295, 37.14127 42.62918, 38.85317 43.92705, 36.70534 43.97082" style="stroke: none; stroke-linecap: butt; stroke-width: 1; fill: rgb(100%,87%,0%); fill-rule: evenodd;"/>
+			<polygon points="36 35, 35.29466 32.97082, 33.14683 32.92705, 34.85873 31.62918, 34.23664 29.57295, 36 30.8, 37.76336 29.57295, 37.14127 31.62918, 38.85317 32.92705, 36.70534 32.97082" style="stroke: none; stroke-linecap: butt; stroke-width: 1; fill: rgb(100%,87%,0%); fill-rule: evenodd;"/>
+			<polygon points="30 27, 29.29466 24.97082, 27.14683 24.92705, 28.85873 23.62918, 28.23664 21.57295, 30 22.8, 31.76336 21.57295, 31.14127 23.62918, 32.85317 24.92705, 30.70534 24.97082" style="stroke: none; stroke-linecap: butt; stroke-width: 1; fill: rgb(100%,87%,0%); fill-rule: evenodd;"/>
+		</g>
+	</g>
+</svg>

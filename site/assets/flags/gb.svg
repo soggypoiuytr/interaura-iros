@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE svg
+  PUBLIC '-//W3C//DTD SVG 1.0//EN'
+  'http://www.w3.org/TR/2001/REC-SVG-20010904/DTD/svg10.dtd'>
+<svg width="90" height="60" preserveAspectRatio="xMinYMin meet" viewBox="0 0 90 60" xmlns="http://www.w3.org/2000/svg" version="1.0" fill-rule="evenodd" xmlns:xlink="http://www.w3.org/1999/xlink">
+	<title>...</title>
+	<desc>...</desc>
+	<clipPath id="clip">
+		<rect x="0" y="0" width="90" height="60"/>
+	</clipPath>
+	<g id="group" transform="scale(1,-1) translate(0,-60)" style="clip-path: url(#clip)">
+		<g transform="">
+			<rect x="0" y="0" width="90" height="60" style="stroke: none; stroke-linecap: butt; stroke-width: 1; fill: rgb(100%,100%,100%); fill-rule: evenodd;"/>
+			<rect x="0" y="0" width="90" height="60" style="stroke: none; stroke-linecap: butt; stroke-width: 1; fill: rgb(0%,12%,41%); fill-rule: evenodd;"/>
+			<polygon points="0 0, 8 0, 90 52, 90 60, 82 60, 0 8" style="stroke: none; stroke-linecap: butt; stroke-width: 1; fill: rgb(100%,100%,100%); fill-rule: evenodd;"/>
+			<polygon points="0 60, 8 60, 90 8, 90 0, 82 0, 0 52" style="stroke: none; stroke-linecap: butt; stroke-width: 1; fill: rgb(100%,100%,100%); fill-rule: evenodd;"/>
+			<polygon points="0 0, 4 0, 90 56, 90 60, 86 60, 0 4" style="stroke: none; stroke-linecap: butt; stroke-width: 1; fill: rgb(78%,6%,18%); fill-rule: evenodd;"/>
+			<polygon points="0 60, 4 60, 90 4, 90 0, 86 0, 0 56" style="stroke: none; stroke-linecap: butt; stroke-width: 1; fill: rgb(78%,6%,18%); fill-rule: evenodd;"/>
+			<rect x="0" y="22" width="90" height="16" style="stroke: none; stroke-linecap: butt; stroke-width: 1; fill: rgb(100%,100%,100%); fill-rule: evenodd;"/>
+			<rect x="35" y="0" width="20" height="60" style="stroke: none; stroke-linecap: butt; stroke-width: 1; fill: rgb(100%,100%,100%); fill-rule: evenodd;"/>
+			<rect x="0" y="26" width="90" height="8" style="stroke: none; stroke-linecap: butt; stroke-width: 1; fill: rgb(78%,6%,18%); fill-rule: evenodd;"/>
+			<rect x="39" y="0" width="12" height="60" style="stroke: none; stroke-linecap: butt; stroke-width: 1; fill: rgb(78%,6%,18%); fill-rule: evenodd;"/>
+		</g>
+	</g>
+</svg>
