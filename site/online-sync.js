@@ -85,15 +85,15 @@
   const notesHash=JSON.stringify(session.notes||{});if(notesHash!==lastNotes){lastNotes=notesHash;const active=irosNotes.find(n=>n.id===activeNoteId),dirty=active&&(pendingNoteWrites.has(active.id)||noteText.value!==active.text||normalizeNoteTitle(noteTitle.value)!==active.title);noteBaseline=JSON.parse(notesHash);if(session.notes){irosNotes=Object.values(session.notes);if(dirty){irosNotes=irosNotes.filter(n=>n.id!==active.id);irosNotes.push(active);}if(!irosNotes.some(n=>n.id===activeNoteId))activeNoteId=irosNotes[0]?.id||null;renderIrosNotes();if(!dirty)loadActiveNote();}}
   Object.assign(iimState,{mode:!!session.iim?.mode&&cable,module:session.iim?.mode&&cable?'07':null,ocularActive:!!session.iim?.ocular,connecting:false});setIimInterface(iimState.mode);input.disabled=false;
   if(stage!=='desktop')return;
-  const rows=Object.values(session.entries||{}).sort((a,b)=>a.at-b.at||a.seq-b.seq),ids=new Set(rows.map(r=>r.id));
+  const allEntries={...session.entries,...window.IROSChannelMail.replyEntries(settings.channelReplies,session)},rows=Object.values(allEntries).sort((a,b)=>a.at-b.at||a.seq-b.seq),ids=new Set(rows.map(r=>r.id));
   for(const el of out.querySelectorAll('[data-shared-entry]'))if(!ids.has(el.dataset.sharedEntry)){rendered.delete(el.dataset.sharedEntry);el.remove();}
   for(const row of rows){if(rendered.has(row.id)||row.at>rt.now())continue;rendered.add(row.id);const nearBottom=out.scrollHeight-out.scrollTop-out.clientHeight<70;const el=document.createElement('div');el.className='terminal-entry';el.dataset.sharedEntry=row.id;
    if(row.command&&row.command.toUpperCase()!=='CLEAR'){const cmd=document.createElement('div');cmd.className='terminal-command';cmd.textContent=(session.iim?.mode?'C:\\IIM\\MOD-07>':'C:\\INTERAURA>')+' '+row.command;const author=row.by==='Observador'||row.byPlayer==='/mestre'?'':row.by||row.byPlayer;if(author){const badge=document.createElement('span');badge.className='terminal-command-author';badge.textContent=' ('+author+')';cmd.append(badge);}el.append(cmd);}
-   el.append(clean(row.html));const next=[...out.children].find(n=>{const r=session.entries[n.dataset.sharedEntry];return r&&(r.at>row.at||(r.at===row.at&&r.seq>row.seq))});out.insertBefore(el,next||null);
+   el.append(clean(row.html));const next=[...out.children].find(n=>{const r=allEntries[n.dataset.sharedEntry];return r&&(r.at>row.at||(r.at===row.at&&r.seq>row.seq))});out.insertBefore(el,next||null);
    el.querySelectorAll('.terminal-death-status').forEach(node=>node.style.setProperty('--death-fault-delay','-'+Math.max(0,rt.now()-row.at)%4700+'ms'));
    el.querySelectorAll('.terminal-response').forEach(node=>revealTerminalResponse(node,{at:row.at,id:row.id,now:()=>rt.now()}));
    if(nearBottom)out.scrollTop=out.scrollHeight;
-   if(ready&&rt.connected&&rt.now()-row.at<2000&&row.html){playTransientSound(terminalReturnSounds[row.seq%terminalReturnSounds.length],.34);if(/^(MOD-01|MÓDULO-01)$/i.test(row.command)){out.classList.add('terminal-neural-fault');setTimeout(()=>out.classList.remove('terminal-neural-fault'),3200);}}
+   if(ready&&rt.connected&&rt.now()-row.at<2000&&row.html&&row.channel!=='KHYRENTUK'){playTransientSound(terminalReturnSounds[row.seq%terminalReturnSounds.length],.34);if(/^(MOD-01|MÓDULO-01)$/i.test(row.command)){out.classList.add('terminal-neural-fault');setTimeout(()=>out.classList.remove('terminal-neural-fault'),3200);}}
    if(ready&&row.notice&&rt.now()-row.at<3000)window.dispatchEvent(new CustomEvent('iros-notice',{detail:row.notice}));
   }
   ready=true;
