@@ -14,10 +14,11 @@
  const chatForm=$('chat-login-form'),chatState=$('chat-link-state'),chatCredential=$('chat-credential'),chatDetail=$('chat-credential-detail'),chatButton=chatForm.querySelector('button'),chatPopup=$('chat-recovery-error');let chatAttempt=0;
  function hideChatError(){chatPopup.classList.remove('open');chatPopup.setAttribute('aria-hidden','true');}
  function loadChatCredential(){const attempt=++chatAttempt,profile=$('chat-profile'),progress=$('chat-sync-progress');hideChatError();chatButton.disabled=true;chatForm.setAttribute('aria-busy','true');chatCredential.textContent='SINCRONIZANDO...';chatDetail.textContent='Lendo a sessão do IROS.';chatState.textContent='SINCRONIZANDO';profile.classList.remove('ready');profile.setAttribute('aria-label','Retrato da credencial em recuperação');profile.querySelector('img').setAttribute('aria-hidden','true');
+  progress.hidden=false;
   function stage(percent,message){progress.setAttribute('aria-valuenow',String(percent));progress.querySelector('span').style.width=percent+'%';chatDetail.textContent=message;}
   stage(8,'Lendo a sessão do IROS.');
   for(const [delay,percent,message] of [[650,26,'Validando credencial local...'],[1450,48,'A.CHIYOMI // Identidade localizada.'],[2350,67,'Reconstruindo o registro de perfil...'],[3050,84,'Vinculando a sessão ao cliente...']])setTimeout(()=>{if(attempt===chatAttempt)stage(percent,message)},delay);
-  setTimeout(()=>{if(attempt!==chatAttempt)return;stage(100,'ARIELLA CHIYOMI // SESSÃO VINCULADA');chatCredential.textContent='A.CHIYOMI';profile.classList.add('ready');profile.setAttribute('aria-label','Retrato de Ariella Chiyomi');profile.querySelector('img').setAttribute('aria-hidden','false');chatForm.setAttribute('aria-busy','false');chatState.textContent='SEM CONEXÃO';chatButton.disabled=false;},3800);
+  setTimeout(()=>{if(attempt!==chatAttempt)return;stage(100,'ARIELLA CHIYOMI // SESSÃO VINCULADA');progress.hidden=true;chatCredential.textContent='A.CHIYOMI';profile.classList.add('ready');profile.setAttribute('aria-label','Retrato de Ariella Chiyomi');profile.querySelector('img').setAttribute('aria-hidden','false');chatForm.setAttribute('aria-busy','false');chatState.textContent='SEM CONEXÃO';chatButton.disabled=false;},3800);
  }
 
  function connectChat(){if(chatButton.disabled)return;hideChatError();const attempt=++chatAttempt;chatButton.disabled=true;chatForm.setAttribute('aria-busy','true');chatState.textContent='CONECTANDO...';
