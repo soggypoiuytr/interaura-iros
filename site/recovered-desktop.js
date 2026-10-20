@@ -6,12 +6,25 @@
  const open=openIrosApp,close=closeIrosWindow,archive=openArchiveRow;
  function enter(win){clearTimeout(closing.get(win));win.classList.remove('processing-exit','processing-enter');void win.offsetWidth;win.classList.add('processing-enter');setTimeout(()=>win.classList.remove('processing-enter'),320)}
  openIrosApp=function(app){
-  if(app==='chat'){irosStartMenu.classList.remove('open');irosStartMenu.setAttribute('aria-hidden','true');const popup=$('chat-recovery-error');popup.classList.add('open');popup.setAttribute('aria-hidden','false');popup.querySelector('.program-error').classList.add('processing-enter');playSystemError();window.IROSTable?.recordAction('ACESSO: Chat Interno // EXECUTÁVEL EM RECUPERAÇÃO');return;}
+
   const result=open(app),win=['network','files','terminal'].includes(app)?appContent:irosWindows[app];
-  if(win?.classList.contains('open')){enter(win);cue('window-open');}return result;
+  if(win?.classList.contains('open')){enter(win);cue('window-open');if(app==='chat')loadChatCredential();}return result;
  };
  closeIrosWindow=function(win){if(!win?.classList.contains('open'))return close(win);clearTimeout(closing.get(win));win.classList.remove('processing-enter');win.classList.add('processing-exit');cue('window-close');closing.set(win,setTimeout(()=>{close(win);win.classList.remove('processing-exit')},180));};
- $('chat-error-close').onclick=()=>{const popup=$('chat-recovery-error');popup.classList.remove('open');popup.setAttribute('aria-hidden','true');cue('window-close')};
+ const chatForm=$('chat-login-form'),chatState=$('chat-link-state'),chatCredential=$('chat-credential'),chatDetail=$('chat-credential-detail'),chatButton=chatForm.querySelector('button'),chatPopup=$('chat-recovery-error');let chatAttempt=0;
+ function hideChatError(){chatPopup.classList.remove('open');chatPopup.setAttribute('aria-hidden','true');}
+ function loadChatCredential(){const attempt=++chatAttempt;hideChatError();chatButton.disabled=true;chatForm.setAttribute('aria-busy','true');chatCredential.textContent='CARREGANDO CREDENCIAL...';chatDetail.textContent='Consultando a sessão autenticada.';chatState.textContent='SEM CONEXÃO';
+  setTimeout(()=>{if(attempt!==chatAttempt)return;chatCredential.textContent='A.CHIYOMI';chatDetail.textContent='ARIELLA CHIYOMI // SESSÃO IROS VINCULADA';chatForm.setAttribute('aria-busy','false');chatButton.disabled=false;},650);
+ }
+ function connectChat(){if(chatButton.disabled)return;hideChatError();const attempt=++chatAttempt;chatButton.disabled=true;chatForm.setAttribute('aria-busy','true');chatState.textContent='CONECTANDO...';
+  setTimeout(()=>{if(attempt!==chatAttempt)return;chatButton.disabled=false;chatForm.setAttribute('aria-busy','false');chatState.textContent='SEM CONEXÃO';if(!$('chat-login-window').classList.contains('open')||document.body.dataset.irosPhase!=='desktop')return;
+   chatPopup.classList.add('open');chatPopup.setAttribute('aria-hidden','false');const dialog=$('chat-error-dialog');dialog.classList.remove('camera-image-glitch');void dialog.offsetWidth;dialog.classList.add('camera-image-glitch');setTimeout(()=>dialog.classList.remove('camera-image-glitch'),430);playSystemError();$('chat-error-close').focus();
+   window.IROSTable?.recordAction('CHAT INTERNO: CONEXÃO RECUSADA // INTMSG-032');
+  },1450);
+ }
+ chatForm.addEventListener('submit',event=>{event.preventDefault();connectChat()});$('chat-retry').onclick=connectChat;$('chat-error-close').onclick=()=>{hideChatError();chatButton.focus()};
+ const closeChatWindow=closeIrosWindow;closeIrosWindow=function(win){if(win===$('chat-login-window')){chatAttempt++;hideChatError();}return closeChatWindow(win)};
+
  openArchiveRow=function(row){if(row.dataset.file==='recovered-song'){archiveRows.forEach(r=>r.classList.toggle('selected',r===row));cue('file-open');openIrosApp('music');return;}const valid=!!archiveDocuments[row.dataset.file],result=archive(row);if(valid){cue('file-open');const button=archiveReader.querySelector('[data-close-archive]'),onclose=button?.onclick;if(button)button.onclick=e=>{cue('file-close');onclose?.call(button,e)};}return result;};
  let media=null,power=null;
  const audio=$('recovered-music'),boot=sounds['boot-extra'];boot.id='recovered-boot-extra';document.body.append(boot);

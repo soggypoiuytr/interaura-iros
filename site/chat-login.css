@@ -1,0 +1,23 @@
+.chat-login-window{left:38%;top:10%;width:316px;height:auto;min-width:0;min-height:0;max-height:calc(100dvh - 58px)}
+.chat-login-window .iros-titlebar-title{font-size:11px;max-width:calc(100% - 180px);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.chat-login-window>.iros-program-users{right:60px;max-width:108px}
+.chat-login-body{padding:9px;background:#a5b7ad;color:#0b2118;font:12px/1.35 "Courier New",monospace;overflow:auto}
+.chat-login-brand{display:flex;flex-direction:column;align-items:center;gap:5px;padding:17px 8px 13px;border:2px inset #d5dfd7;background:radial-gradient(ellipse at 50% 25%,#285c47,#08271e 75%);color:#d0e7c9;text-align:center}
+.chat-login-brand img{width:74px;height:74px;object-fit:contain;image-rendering:pixelated;filter:drop-shadow(2px 3px #03150f)}
+.chat-login-brand strong{font-size:20px;letter-spacing:1px;text-shadow:2px 2px #071a12}
+.chat-login-brand span{font-size:10px}.chat-login-brand small{font-size:9px;color:#85ae99;margin-top:3px}
+#chat-login-form{display:block;padding:12px 2px 8px}
+#chat-login-form label{display:block;margin:0 0 4px;font-weight:bold}
+.chat-session-credential{box-sizing:border-box;width:100%;height:29px;padding:5px 6px;border:2px inset #dae3dc;background:#e0e8dc;color:#102b20;font:13px "Courier New",monospace}
+#chat-credential-detail{display:block;margin:5px 0;font:9px/1.5 "Courier New",monospace;min-height:27px;color:#294b39}
+.chat-login-actions{display:flex;align-items:center;gap:5px;margin-top:13px;font-size:10px}
+.chat-offline-lamp{width:7px;height:7px;background:#753e30;border:1px inset #dce5df}
+.chat-login-actions button{margin-left:auto;padding:7px 10px;border:2px outset #dce5df;background:#b9c9bd;color:#102b20;border-radius:0;font:bold 11px "Courier New",monospace;cursor:pointer}
+.chat-login-actions button:active{border-style:inset}.chat-login-actions button:disabled{color:#576b5e;cursor:wait}
+.chat-login-footer{display:flex;justify-content:space-between;gap:6px;margin-top:9px;padding-top:6px;border-top:1px solid #748f80;font-size:8px;color:#284c3c}
+@media(max-width:720px){.chat-login-window{left:calc(50% - 158px);top:5%;width:min(316px,94vw);max-height:calc(100dvh - 66px)}}
+
+.chat-login-window>.iros-titlebar{position:relative;padding-right:60px;min-height:26px;box-sizing:border-box}
+.chat-login-window .iros-window-controls{position:absolute;right:4px;top:3px;display:flex;gap:2px;margin:0}
+.chat-login-window .iros-titlebar-title{max-width:110px;flex:0 1 110px}
+#chat-recovery-error::before,#chat-recovery-error::after{content:"INTMSG-032 // ROTA DE SESSÃO NÃO RECONSTRUÍDA"}
