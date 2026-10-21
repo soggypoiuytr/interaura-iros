@@ -1,0 +1,7 @@
+{
+  "guildId":"1065076970636980293",
+  "room":"int-jp-04",
+  "historyLimit":500,
+  "pollSeconds":120,
+  "channels":[{"module":"07","channelId":"1549045769838010398","messageIds":[],"authorIds":[]}]
+}

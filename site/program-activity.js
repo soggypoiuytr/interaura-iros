@@ -12,9 +12,10 @@ window.IROSProgramActivity={
    let app=target.dataset.openApp||target.dataset.appWindow;
    if(app==='main')app=typeof mainWindowApp==='string'?mainWindowApp:'';
    const users=[...(apps.get(app)||[])],text=window.IROSProgramActivity.label(users);
-   let tag=target.querySelector(':scope > .iros-program-users');
+   const desktop=target.classList.contains('desktop-icon'),bar=desktop?null:target.querySelector(':scope > .iros-titlebar');
+   let tag=target.querySelector(desktop?':scope > .iros-program-users':':scope > .iros-titlebar > .iros-program-users');
    if(!text){tag?.remove();continue;}
-   if(!tag){tag=document.createElement('span');tag.className='iros-program-users';if(target.classList.contains('desktop-icon'))target.prepend(tag);else target.append(tag);}
+   if(!tag){tag=document.createElement('span');tag.className='iros-program-users';if(desktop)target.prepend(tag);else if(bar)bar.insertBefore(tag,bar.querySelector('.iros-window-controls'));else target.append(tag);}
    if(tag.textContent!==text){tag.textContent=text;tag.classList.remove('activity-glitch');void tag.offsetWidth;tag.classList.add('activity-glitch');}tag.title='Vendo este programa:\n'+users.join('\n');tag.setAttribute('aria-label',tag.title);
   }
  }

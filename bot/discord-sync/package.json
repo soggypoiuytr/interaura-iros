@@ -1,0 +1,17 @@
+{
+  "name": "iros-discord-attributes",
+  "private": true,
+  "version": "0.1.0",
+  "engines": {
+    "node": ">=22.12.0"
+  },
+  "scripts": {
+    "start": "node --env-file-if-exists=.env index.cjs",
+    "test": "node ../../tests/discord-attributes.cjs",
+    "channels": "node --env-file-if-exists=.env list-channels.cjs"
+  },
+  "dependencies": {
+    "discord.js": "^14.23.1",
+    "firebase-admin": "^14.5.0"
+  }
+}

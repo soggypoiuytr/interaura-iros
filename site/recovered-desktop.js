@@ -7,6 +7,7 @@
  function enter(win){clearTimeout(closing.get(win));win.classList.remove('processing-exit','processing-enter');void win.offsetWidth;win.classList.add('processing-enter');setTimeout(()=>win.classList.remove('processing-enter'),320)}
  openIrosApp=function(app){
 
+  if(app==='chat'&&window.IROSInternalChat?.connected){open('chat-list');enter($('chat-contacts-window'));cue('window-open');return;}
   const result=open(app),win=['network','files','terminal'].includes(app)?appContent:irosWindows[app];
   if(win?.classList.contains('open')){enter(win);cue('window-open');if(app==='chat')loadChatCredential();}return result;
  };
@@ -22,9 +23,9 @@
  }
 
  function connectChat(){if(chatButton.disabled)return;hideChatError();const attempt=++chatAttempt;chatButton.disabled=true;chatForm.setAttribute('aria-busy','true');chatState.textContent='CONECTANDO...';
-  setTimeout(()=>{if(attempt!==chatAttempt)return;chatButton.disabled=false;chatForm.setAttribute('aria-busy','false');chatState.textContent='SEM CONEXÃO';if(!$('chat-login-window').classList.contains('open')||document.body.dataset.irosPhase!=='desktop')return;
-   chatPopup.classList.add('open');chatPopup.setAttribute('aria-hidden','false');const dialog=$('chat-error-dialog');dialog.classList.remove('camera-image-glitch');void dialog.offsetWidth;dialog.classList.add('camera-image-glitch');setTimeout(()=>dialog.classList.remove('camera-image-glitch'),430);playSystemError();$('chat-error-close').focus();
-   window.IROSTable?.recordAction('CHAT INTERNO: CONEXÃO RECUSADA // INTMSG-032');
+  setTimeout(()=>{if(attempt!==chatAttempt)return;chatButton.disabled=false;chatForm.setAttribute('aria-busy','false');if(!$('chat-login-window').classList.contains('open')||document.body.dataset.irosPhase!=='desktop')return;
+   chatState.textContent='CONECTADA';window.IROSInternalChat?.open();
+   window.IROSTable?.recordAction('CHAT INTERNO: CONEXÃO RECUPERADA // A.CHIYOMI');
   },1450);
  }
  chatForm.addEventListener('submit',event=>{event.preventDefault();connectChat()});$('chat-retry').onclick=connectChat;$('chat-error-close').onclick=()=>{hideChatError();chatButton.focus()};

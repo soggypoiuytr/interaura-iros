@@ -3,3 +3,15 @@ node_modules/
 .env.*
 .firebase/
 firebase-debug.log
+
+bot/discord-sync/config.json
+bot/discord-sync/channel-inventory.local.json
+bot/discord-sync/.secrets/
+
+
+.npm-cache/
+
+
+bot/discord-sync/sheet-discovery.local.json
+
+bot/discord-sync/*.local.log
