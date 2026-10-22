@@ -18,14 +18,16 @@ function parseSheet(text){
  if(pending)errors.push('Valor ausente: '+pending);
  for(const key of ['remaining',...Object.values(names)])if(!(key in attributes))errors.push('Campo ausente: '+key);
  if(errors.length)return {ok:false,reason:errors.join('; ')};
- return {ok:true,attributes};
+ const levels=lines.slice(0,start).map(line=>line.match(/^NIVEL DE EXPERIENCIA\s*:\s*(\d+)\s*$/)).filter(Boolean).map(match=>Number(match[1]));
+ const assimilationLevel=levels.length===1&&Number.isSafeInteger(levels[0])&&levels[0]<=1000000?levels[0]:null;
+ return {ok:true,attributes,assimilationLevel};
 }
 function moduleKey(value){const match=String(value).trim().toUpperCase().match(/^(?:MOD(?:ULO)?[-\s]*)?(\d{1,3})(-\d+)?$/);if(!match)throw Error('Módulo inválido');return String(Number(match[1])).padStart(2,'0')+(match[2]||'');}
 function selectSheet(messages,mapping){
  const ordered=messages.filter(m=>!m.bot&&(!mapping.authorIds?.length||mapping.authorIds.includes(m.authorId))).sort((a,b)=>BigInt(a.id)<BigInt(b.id)?-1:1);
  let selected;
  if(mapping.messageIds?.length){selected=mapping.messageIds.map(id=>ordered.find(m=>m.id===id));if(selected.some(m=>!m))return {ok:false,reason:'Uma mensagem de ficha configurada foi excluída ou não pôde ser lida.'};}
- else{const headers=ordered.filter(m=>normalize(m.content).includes('ATRIBUTOS'));const header=headers.at(-1);if(!header)return {ok:false,reason:'Nenhuma seção ATRIBUTOS nas mensagens consultadas.'};selected=ordered.filter(m=>BigInt(m.id)>=BigInt(header.id)&&m.authorId===header.authorId).slice(0,12);}
+ else{const headers=ordered.filter(m=>normalize(m.content).includes('ATRIBUTOS'));const header=headers.at(-1);if(!header)return {ok:false,reason:'Nenhuma seção ATRIBUTOS nas mensagens consultadas.'};const authorMessages=ordered.filter(m=>m.authorId===header.authorId),index=authorMessages.indexOf(header);let first=index;for(let i=index-1;i>=Math.max(0,index-6);i--){const lines=normalize(authorMessages[i].content);if(lines.includes('ATRIBUTOS'))break;if(lines.some(line=>/^NIVEL DE EXPERIENCIA\s*:/.test(line))){first=i;break;}if(lines.some(line=>/^MODULO\b/.test(line)))break;}selected=authorMessages.slice(first,index+12);}
  const content=selected.map(m=>m.content).join('\n'),declared=normalize(content).map(line=>line.match(/^MODULO\s*[- ]?\s*(\d+(?:-\d+)?)\s*$/)).filter(Boolean);
  if(declared.some(m=>moduleKey(m[1])!==moduleKey(mapping.module)))return {ok:false,reason:'O módulo declarado na ficha não corresponde ao canal configurado.'};
  const result=parseSheet(content);return result.ok?{...result,messageIds:selected.map(m=>m.id)}:result;

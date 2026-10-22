@@ -11,6 +11,7 @@
   return {index,done:age>=duration,jolt:age>=offset&&age<duration&&joltAge>=0&&joltAge<160,joltAge:Math.max(0,joltAge)};
  }
  function threateningFrame(length,age,id){
+  age/=1.25; // Stretch speech, hesitations and glitches together.
   age=Math.max(0,age);const duration=Math.min(24000,Math.max(2400,length*65));
   let hash=0;for(const c of String(id))hash=(Math.imul(hash,31)+c.charCodeAt(0))>>>0;
   // Seeded bursts and hesitations keep every viewer on the same clock.

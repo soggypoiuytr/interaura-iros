@@ -18,7 +18,7 @@ async function start(){
  const serialize=m=>({id:m.id,authorId:m.author.id,bot:m.author.bot,content:m.content||''});
  async function sync(entry){
   let result;try{const channel=await client.channels.fetch(entry.channelId);if(!channel||channel.guildId!==config.guildId||!channel.isTextBased()||!channel.messages)throw Error('Canal ausente ou de outro servidor.');result=await fetchSheet(channel,entry);}catch(error){console.error('MOD-'+entry.module+' // leitura indisponível ('+String(error.code||error.name)+').');return;}
-  const payload=result.ok?{status:'synced',attributes:result.attributes,source:{channelId:entry.channelId,messageIds:result.messageIds}}:{status:'unavailable',reason:result.reason,source:{channelId:entry.channelId}};
+  const payload=result.ok?{status:'synced',attributes:result.attributes,assimilationLevel:result.assimilationLevel,source:{channelId:entry.channelId,messageIds:result.messageIds}}:{status:'unavailable',reason:result.reason,source:{channelId:entry.channelId}};
   const hash=JSON.stringify(payload);if(hashes.get(entry.module)===hash)return;
   if(!dryRun)await db.ref('irosRooms/'+config.room+'/state/settings/characterAttributes/'+entry.module).set({...payload,syncedAt:Date.now()});
   hashes.set(entry.module,hash);console.log((dryRun?'SIMULAÇÃO':'SINCRONIZADO')+' // MOD-'+entry.module+' // '+(result.ok?JSON.stringify(result.attributes):result.reason));
@@ -29,8 +29,8 @@ async function start(){
  client.on(Events.MessageDelete,m=>schedule(m.channelId));
  client.on(Events.MessageBulkDelete,messages=>{for(const m of messages.values())schedule(m.channelId);});
  client.on(Events.Error,error=>console.error('Discord indisponível ('+String(error.code||error.name)+').'));
- let poll;client.once(Events.ClientReady,async()=>{console.log('BOT DE ATRIBUTOS IROS // '+(dryRun?'SIMULAÇÃO - SEM ESCRITA':'DISCORD → IROS'));if(process.argv.includes('--once')){try{for(const entry of config.channels)await sync(entry);}catch(error){console.error('Falha ao conferir fichas ('+String(error.code||error.name)+').');process.exitCode=1;}finally{await shutdown();}return;}for(const entry of config.channels)schedule(entry.channelId,0);poll=setInterval(()=>{for(const entry of config.channels)schedule(entry.channelId,0);},config.pollSeconds*1000);});
- async function shutdown(){closing=true;clearInterval(poll);for(const timer of timers.values())clearTimeout(timer);client.destroy();await Promise.allSettled(queues.values());if(db)await db.app.delete();}
+ let stopNotices=()=>{};let poll;client.once(Events.ClientReady,async()=>{if(!dryRun&&!process.argv.includes('--once'))stopNotices=require('./implementation-notices.cjs').watch({db,client,config:{...config.implementationNotices,guildId:config.guildId}});console.log('BOT DE ATRIBUTOS IROS // '+(dryRun?'SIMULAÇÃO - SEM ESCRITA':'DISCORD → IROS'));if(process.argv.includes('--once')){try{for(const entry of config.channels)await sync(entry);}catch(error){console.error('Falha ao conferir fichas ('+String(error.code||error.name)+').');process.exitCode=1;}finally{await shutdown();}return;}for(const entry of config.channels)schedule(entry.channelId,0);poll=setInterval(()=>{for(const entry of config.channels)schedule(entry.channelId,0);},config.pollSeconds*1000);});
+ async function shutdown(){closing=true;stopNotices();clearInterval(poll);for(const timer of timers.values())clearTimeout(timer);client.destroy();await Promise.allSettled(queues.values());if(db)await db.app.delete();}
  process.once('SIGINT',shutdown);process.once('SIGTERM',shutdown);
  await client.login(process.env.DISCORD_BOT_TOKEN);
 }

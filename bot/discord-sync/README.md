@@ -1,6 +1,6 @@
 # IROS - fichas do Discord
 
-Bot separado do site e do GitHub Pages. O fluxo é somente Discord → IROS. Lê a seção ATRIBUTOS das mensagens e sincroniza apenas os pontos restantes e os cinco atributos. Não publica mensagens, não altera fichas no Discord e não importa nomes, vida, concentração, inventário ou história dos personagens.
+Bot separado do site e do GitHub Pages. O fluxo é somente Discord → IROS. Lê os pontos restantes, os cinco atributos e o nível de experiência das mensagens. Não altera as fichas no Discord nem importa nomes, vida, concentração, inventário ou história. Quando explicitamente habilitado, também envia avisos de detecção e implementação Cryptum somente ao canal e à sala configurados.
 
 ## Primeiro: listar os canais
 
@@ -32,3 +32,11 @@ Na raiz do projeto: `node tests/discord-attributes.cjs`. Os testes não se conec
 - [Discord: Gateway e intents](https://docs.discord.com/developers/events/gateway)
 - [Discord: mensagens e conteúdo](https://docs.discord.com/developers/resources/message)
 - [Firebase Admin: configuração de servidor](https://firebase.google.com/docs/admin/setup)
+
+## Nível e avisos de implementação
+
+A leitura inclui `NÍVEL DE EXPERIÊNCIA`, apresentado no IIM como **NÍVEL DE ASSIMILAÇÃO**. O bot não altera o nível nem concede pontos. Campos ausentes permanecem não indexados.
+
+`implementationNotices` no `config.json` pode conter `enabled`, `room` e `channelId`. O canal precisa permitir Ver canal e Enviar mensagens ao bot. A configuração local de teste acompanha somente `teste-firebase-2010` e envia para `#anotaçoes` em `-COMUNICAÇÃO INTERNA-`; o canal público não está habilitado.
+
+Somente detecções de amostra e implementações concluídas após iniciar o bot geram avisos. Cada amostra assimilada registra 100 pontos compartilhados para progressão de nível, sem aumentar automaticamente os atributos ou o nível. Cada evento recebe um registro de envio no Firebase Admin e uma identificação estável no Discord para evitar duplicação. Reiniciar o bot não republica eventos antigos. A máquina que executa o bot precisa permanecer ligada para enviar avisos e ler atualizações. `--once` só atualiza os parâmetros e encerra, sem enviar avisos.

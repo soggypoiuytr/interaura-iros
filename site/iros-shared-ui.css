@@ -40,7 +40,7 @@
 .iros-iim-link.announcing .iros-remote-tooltip{display:none}
 .iros-iim-link.announcing:hover .iros-remote-tooltip,.iros-iim-link.announcing:focus .iros-remote-tooltip{display:block}
 .iros-iim-link .iros-remote-tooltip{right:calc(50% - 25px)}
-.iros-tray-balloon{position:fixed;z-index:95000;width:min(285px,calc(100vw - 16px));padding-right:30px;animation:iros-balloon-arrival .18s ease-out}
+.iros-tray-balloon{position:fixed;z-index:11000;width:min(285px,calc(100vw - 16px));padding-right:30px;animation:iros-balloon-arrival .18s ease-out}
 .iros-tray-balloon::after{content:"";position:absolute;left:var(--balloon-tail,240px);bottom:-9px;width:15px;height:15px;background:#ffffdf;border-right:1px solid #53594d;border-bottom:1px solid #53594d;transform:translateX(-50%) skewY(35deg)}
 .iros-tray-balloon strong{display:block;font-size:11px}.iros-tray-balloon p{margin:5px 0 0}.iros-tray-balloon button{position:absolute;right:5px;top:4px;width:17px;height:17px;border:1px solid #c6c9a9;border-radius:3px;background:transparent;color:#73795e;padding:0;font:14px/14px Arial;cursor:pointer}
 @keyframes iros-balloon-arrival{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:none}}

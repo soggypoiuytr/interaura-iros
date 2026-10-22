@@ -5,13 +5,14 @@
  playSystemError=function(){return playAudio(document.getElementById('error-chord-audio'),.85)};
  const open=openIrosApp,close=closeIrosWindow,archive=openArchiveRow;
  function enter(win){clearTimeout(closing.get(win));win.classList.remove('processing-exit','processing-enter');void win.offsetWidth;win.classList.add('processing-enter');setTimeout(()=>win.classList.remove('processing-enter'),320)}
+ window.IROSWindowEffects={open(win){enter(win);cue('window-open');},close(win){clearTimeout(closing.get(win));win.classList.remove('processing-enter');win.classList.add('processing-exit');cue('window-close');}};
  openIrosApp=function(app){
 
   if(app==='chat'&&window.IROSInternalChat?.connected){open('chat-list');enter($('chat-contacts-window'));cue('window-open');return;}
   const result=open(app),win=['network','files','terminal'].includes(app)?appContent:irosWindows[app];
   if(win?.classList.contains('open')){enter(win);cue('window-open');if(app==='chat')loadChatCredential();}return result;
  };
- closeIrosWindow=function(win){if(!win?.classList.contains('open'))return close(win);clearTimeout(closing.get(win));win.classList.remove('processing-enter');win.classList.add('processing-exit');cue('window-close');closing.set(win,setTimeout(()=>{close(win);win.classList.remove('processing-exit')},180));};
+ closeIrosWindow=function(win){if(!win?.classList.contains('open'))return close(win);clearTimeout(closing.get(win));win.classList.remove('processing-enter');win.classList.add('processing-exit');cue('window-close');closing.set(win,setTimeout(()=>{if(!win.classList.contains('processing-exit'))return;close(win);win.classList.remove('processing-exit')},180));};
  const chatForm=$('chat-login-form'),chatState=$('chat-link-state'),chatCredential=$('chat-credential'),chatDetail=$('chat-credential-detail'),chatButton=chatForm.querySelector('button'),chatPopup=$('chat-recovery-error');let chatAttempt=0;
  function hideChatError(){chatPopup.classList.remove('open');chatPopup.setAttribute('aria-hidden','true');}
  function loadChatCredential(){const attempt=++chatAttempt,profile=$('chat-profile'),progress=$('chat-sync-progress');hideChatError();chatButton.disabled=true;chatForm.setAttribute('aria-busy','true');chatCredential.textContent='SINCRONIZANDO...';chatDetail.textContent='Lendo a sessão do IROS.';chatState.textContent='SINCRONIZANDO';profile.classList.remove('ready');profile.setAttribute('aria-label','Retrato da credencial em recuperação');profile.querySelector('img').setAttribute('aria-hidden','true');

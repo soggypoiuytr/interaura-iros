@@ -29,3 +29,9 @@ api.set({'07':{status:'synced',attributes:{...expected,body:'<script>'}}});asser
 const rules=JSON.parse(fs.readFileSync('database.rules.json','utf8')).rules,write=rules.irosRooms.$room.state.settings['.write'];class Snap{constructor(v){this.v=v;}child(k){return new Snap(this.v?.[k]);}val(){return this.v??null;}}
 assert.equal(vm.runInNewContext(write,{auth:{uid:'player'},root:new Snap({masters:{}})}),false);
 console.log('PASS: parser da ficha Discord, atributos isolados, campos incompletos, seleção de mensagens, vínculo modular e STATUS do IIM.');
+
+assert.equal(parseSheet(fixture.replace('STATUS\n','STATUS\nNÍVEL DE EXPERIÊNCIA: 0\n')).assimilationLevel,0);
+assert.equal(parseSheet(fixture.replace('STATUS\n','STATUS\nNÍVEL DE EXPERIÊNCIA: 3\n')).assimilationLevel,3);
+assert.equal(parseSheet(fixture).assimilationLevel,null);
+assert.equal(selectSheet([{...message,id:'99',content:'STATUS\nNÍVEL DE EXPERIÊNCIA: 2'},message],{module:'07'}).assimilationLevel,2);
+api.set({'07':{status:'synced',attributes:expected,assimilationLevel:0}});const levelHtml=api.apply(html,'07');assert(levelHtml.includes('NÍVEL DE ASSIMILAÇÃO: 0'));assert(!/DISCORD|FICHA/.test(levelHtml));assert.equal((api.apply(levelHtml,'07').match(/NÍVEL DE ASSIMILAÇÃO/g)||[]).length,1);

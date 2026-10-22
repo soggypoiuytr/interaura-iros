@@ -42,7 +42,7 @@
 .messenger-unread-badge[hidden]{display:none;}
 .desktop-icon>.messenger-unread-badge{top:0;left:calc(50% + 9px);}
 .messenger-tray{position:relative;display:grid;place-items:center;width:33px;height:27px;padding:2px 6px 2px 1px;background:transparent;border:1px solid transparent;cursor:pointer;}
-.messenger-tray[hidden]{display:none;}.messenger-tray:hover,.messenger-tray:focus-visible{border:1px inset #c6d4ca;background:#577a65;}
+.messenger-tray[hidden]{display:none;}.messenger-tray:hover,.messenger-tray:focus-visible{border:1px solid transparent;background:transparent;outline:none;}
 .messenger-tray>img{display:block;width:23px;height:23px;object-fit:contain;image-rendering:pixelated;}
 .messenger-tray>.messenger-unread-badge{right:-2px;top:-2px;}
 
@@ -51,3 +51,19 @@
 .messenger-history article.messenger-emergency{padding:9px 10px;border:1px solid #a34a3c;border-left:3px solid #852c26;background:#ead4c7;}
 .messenger-history article.messenger-emergency b,.messenger-history article.messenger-emergency p{color:#8d201c;}
 .messenger-history article.messenger-emergency small{color:#80372e;}
+
+.messenger-tray.announcing>img{animation:messenger-connected-blink .65s steps(2,end) infinite}
+@keyframes messenger-connected-blink{50%{opacity:.25;filter:brightness(1.8)}}
+@media(prefers-reduced-motion:reduce){.messenger-tray.announcing>img{animation:none}}
+
+/* Keep the unread counter below the separate viewer caption. */
+.desktop-icon[data-open-app="chat"]>.messenger-unread-badge{top:23px;left:calc(50% + 13px);z-index:3}
+
+.iros-tray-balloon.messenger-connected-balloon{z-index:11000}.messenger-connected-balloon p{white-space:pre-line}
+
+.messenger-tray.announcing{animation:iim-tray-announce .34s steps(2) infinite}.messenger-tray.announcing>img{animation:none}.iros-tray-balloon.messenger-connected-balloon{animation:iim-tooltip-arrival .28s steps(2) 2}
+@media(prefers-reduced-motion:reduce){.messenger-tray.announcing,.iros-tray-balloon.messenger-connected-balloon{animation:none}}
+
+.messenger-tray{cursor:help}.messenger-tray>.iros-remote-tooltip{white-space:pre-line;right:calc(50% - 25px)}.messenger-tray:hover>.iros-remote-tooltip,.messenger-tray:focus-visible>.iros-remote-tooltip{display:block}
+
+.messenger-contact-unread{flex:0 0 auto;margin-left:auto;min-width:19px;padding:2px 4px;border:1px solid #eddcc2;background:#8f3029;color:#fff1d5;box-shadow:1px 1px #07170f;text-align:center;font:700 11px/14px "Courier New",monospace}.messenger-contact-unread[hidden]{display:none}.messenger-contact-list button.has-unread:not(.selected){background:#d3dbc2;border-color:#a5b296}.messenger-contact-list button.has-unread b{font-weight:900}

@@ -1,0 +1,5 @@
+@media (hover:hover) and (pointer:fine){
+ body.iros-cursor-busy,body.iros-cursor-busy *,body.iros-cursor-startup,body.iros-cursor-startup *{cursor:none!important}
+}
+#iros-loading-cursor{position:fixed;left:0;top:0;width:48px;height:48px;z-index:119000;pointer-events:none!important;background:url('assets/cursors/interaura-loading-sheet.png?rev=white') no-repeat;background-size:384px 192px;image-rendering:pixelated;will-change:transform;contain:strict}
+#iros-loading-cursor[hidden]{display:none}

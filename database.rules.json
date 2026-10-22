@@ -58,6 +58,9 @@
             "iim": {
               ".validate": "(auth != null && root.child('masters').child(auth.uid).val() === true) || ((newData.child('mode').val() !== true || data.child('mode').val() === true) && (newData.child('ocular').val() !== true || data.child('ocular').val() === true))"
             },
+            "ocularModules": {
+              ".validate": "(auth != null && root.child('masters').child(auth.uid).val() === true) || newData.val() === data.val()"
+            },
             "request": {
               ".validate": "(auth != null && root.child('masters').child(auth.uid).val() === true) || (newData.child('status').val() === 'pending' && (!data.exists() || data.child('status').val() !== 'pending' || newData.child('id').val() === data.child('id').val())) || (newData.child('id').val() === data.child('id').val() && newData.child('status').val() === data.child('status').val() && newData.child('command').val() === data.child('command').val())"
             }

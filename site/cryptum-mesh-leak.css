@@ -1,0 +1,19 @@
+#iim-contemplador-symbol.iim-krytux-seal img{filter:invert(1);opacity:.82;animation:none;transform:translateY(-50%)}
+.iim-host-identity .iim-portrait-unreachable #iim-host-portrait{width:100%;height:100%;left:0;top:0;object-fit:cover;image-rendering:pixelated;animation:iim-portrait-retrieval 3.9s steps(1,end) infinite}
+.iim-portrait-unreachable::after{content:'';position:absolute;inset:0;pointer-events:none;background:repeating-linear-gradient(0deg,transparent 0 3px,#b5e4df44 3px 4px);mix-blend-mode:screen;animation:iim-portrait-static 2.7s steps(1,end) infinite}
+@keyframes iim-portrait-retrieval{0%,82%,100%{transform:none;opacity:.8;filter:grayscale(.65)}83%{transform:translateX(-4px) skewX(8deg);filter:contrast(2);opacity:.25}86%{transform:translateX(5px);filter:brightness(1.6)}89%{transform:scaleY(.8);opacity:.5}92%{transform:none;filter:grayscale(1)}}
+@keyframes iim-portrait-static{0%,78%,100%{opacity:.18}80%,88%{opacity:.8;transform:translateY(3px)}85%{opacity:0;transform:translateY(-2px)}}
+.cryptum-mesh-tint{position:fixed;inset:0;z-index:99993;pointer-events:none;background:linear-gradient(120deg,#0046bf,#038cff 65%,#3ccfff);mix-blend-mode:color;opacity:.09}
+body.cryptum-mesh-pulse .cryptum-mesh-tint{opacity:.17}
+body.cryptum-mesh-linked #iros-desktop{animation:cryptum-mesh-shiver 7s steps(1,end) infinite;animation-delay:var(--mesh-phase,0s)}
+@keyframes cryptum-mesh-shiver{0%,4%,87%,93%,100%{transform:none}1%{transform:translateX(-2px)}2%{transform:translateX(2px) skewX(.15deg)}89%{transform:translateX(1px)}91%{transform:translateX(-1px)}}
+.cryptum-mesh-icon{background:url('assets/icons/cryptum-intrusion.png') center/contain no-repeat!important;image-rendering:pixelated;color:transparent!important;animation:cryptum-mesh-icon-fault .18s steps(1,end) infinite}
+img.cryptum-mesh-icon{content:url('assets/icons/cryptum-intrusion.png');object-fit:contain}
+.cryptum-mesh-icon::before,.cryptum-mesh-icon::after{visibility:hidden}
+.cryptum-mesh-icon>*{visibility:hidden}
+@keyframes cryptum-mesh-icon-fault{0%,84%,100%{filter:drop-shadow(0 0 2px #008cff);translate:0 0;opacity:.85}85%{translate:-2px 0;opacity:.35}88%{translate:2px 0;filter:brightness(1.6)}92%{translate:0 0;opacity:.7}}
+.cryptum-mesh-text{font-family:CryptumStray,monospace!important;font-weight:normal!important;color:#96e2ff!important;text-shadow:1px 0 #0066ff!important;background-color:#062340!important;display:inline-block;animation:cryptum-mesh-text-fault .065s steps(1,end) infinite!important}
+@media(prefers-reduced-motion:reduce){.iim-host-identity .iim-portrait-unreachable #iim-host-portrait,.iim-portrait-unreachable::after,body.cryptum-mesh-linked #iros-desktop,.cryptum-mesh-icon{animation:none}}
+
+@keyframes cryptum-mesh-text-fault{0%,100%{transform:translate(-3px,0) skewX(-12deg);clip-path:inset(0 0 30%);opacity:1;filter:brightness(1.8)}20%{transform:translate(5px,-1px) scaleX(1.15);clip-path:inset(30% 0 0);opacity:.5}42%{transform:translate(-5px,1px) skewX(17deg);clip-path:none;opacity:1;filter:contrast(2)}64%{transform:translate(3px,0) scaleY(.7);clip-path:inset(12% 0 12%);opacity:.3}82%{transform:translate(-1px,-1px) skewX(-8deg);clip-path:none;opacity:1;filter:brightness(2.3)}}
+@media(prefers-reduced-motion:reduce){.cryptum-mesh-text{animation:none!important}}
