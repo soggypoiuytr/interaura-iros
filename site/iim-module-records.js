@@ -6,7 +6,7 @@
    const t=document.createElement('template');t.innerHTML=derivedModuleDocument();const facts={};for(const row of t.content.querySelectorAll('.record-facts>div'))facts[row.querySelector('dt')?.textContent.trim()]=row.querySelector('dd')?.textContent.trim();
    return {image:t.content.querySelector('.profile-layout img')?.getAttribute('src'),status:'ATIVO / VIVO',classe:facts['CLASSIFICAÇÃO OPERACIONAL'],compat:null,contemplador:'INCERTO',sequelas:facts['COMPOSIÇÃO BIOLÓGICA'],manifestacoes:[facts['CONDIÇÃO OCULAR']],sections:[...t.content.querySelectorAll('.record-section')].map(section=>({title:section.querySelector('h4')?.textContent,text:plain(section.innerHTML.replace(/<h4[\s\S]*?<\/h4>/i,''))}))};
   }
-  const r=records[Number(module)];if(!r||r.placeholder)return ['11','67'].includes(module)?{pending:true,contemplador:'KRYTUX',image:'assets/portraits/mod-'+module+'-unreachable-v2.png',portraitUncertain:true}:null;
+  const r=records[Number(module)];if(!r||r.placeholder)return ['11','67'].includes(module)?{pending:true,contemplador:'KRYTUX',image:'assets/portraits/mod-'+module+'-unreachable-v2.webp',portraitUncertain:true}:null;
   return {...r,contemplador:[4,11,24,35,49,67].includes(Number(module))?'KRYTUX':'INCERTO'};
  }
  function status(module){
