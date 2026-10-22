@@ -104,7 +104,7 @@
    el.querySelectorAll('.terminal-death-status').forEach(node=>node.style.setProperty('--death-fault-delay','-'+Math.max(0,rt.now()-row.at)%4700+'ms'));
    el.querySelectorAll('.terminal-response').forEach(node=>revealTerminalResponse(node,{at:channelRevealAt(row),id:row.id,now:()=>rt.now()}));
    if(nearBottom)targetOut.scrollTop=targetOut.scrollHeight;
-   if(ready&&rt.connected&&rt.now()-row.at<2000&&row.html&&row.channel!=='KHYRENTUK'){playTransientSound(terminalReturnSounds[row.seq%terminalReturnSounds.length],.34);if(/^(MOD-01|MÓDULO-01)$/i.test(row.command)){out.classList.add('terminal-neural-fault');setTimeout(()=>out.classList.remove('terminal-neural-fault'),3200);}}
+   if(ready&&rt.connected&&rt.now()-channelRevealAt(row)<2000&&row.html){playTransientSound(terminalReturnSounds[row.seq%terminalReturnSounds.length],.34);if(/^(MOD-01|MÓDULO-01)$/i.test(row.command)){out.classList.add('terminal-neural-fault');setTimeout(()=>out.classList.remove('terminal-neural-fault'),3200);}}
    if(ready&&row.notice&&rt.now()-row.at<3000)window.dispatchEvent(new CustomEvent('iros-notice',{detail:row.notice}));
   }
   ready=true;
