@@ -38,7 +38,7 @@ assert(record19.psych.includes('curiosidade constante'));assert(record19.psych.i
 
 assert(record19.desc.includes('As equipes policiais não tinham conhecimento da Interaura'));assert(record19.desc.includes('aproximação involuntária'));assert(record19.desc.includes('registros de transferência adulterados'));assert(!record19.desc.includes('custódia posterior foi ocultada por documentação de cooperação internacional'));
 
-assert(record19.desc.includes('captura foi realizada pela polícia japonesa, sem operação conjunta com a polícia francesa'));assert(record19.desc.includes('por encomenda da Khabapol'));assert(record19.desc.includes('favorecer os interesses da organização'));
+assert(record19.desc.includes('captura foi realizada pela polícia francesa'));assert(!record19.desc.includes('captura foi realizada pela polícia japonesa'));assert(record19.desc.includes('O destino real foi ocultado das autoridades francesas'));assert(record19.desc.includes('manipularam clandestinamente a transferência'));assert(record19.desc.includes('por encomenda da Khabapol'));assert(record19.desc.includes('favorecer os interesses da organização'));
 
 
 {
