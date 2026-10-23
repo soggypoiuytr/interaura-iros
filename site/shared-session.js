@@ -18,6 +18,11 @@ window.IROS_IIM_TEXT={"connected":"RESPOSTA DA UNIDADE IIM RECEBIDA.\n\nIDENTIDA
   const text=(value,type='data')=>root.IROSSharedSession.text(String(value).replaceAll('MOD-07','MOD-'+host()),type);
   if(s.entries[op.id])return;
   function append(html,delay=0,id=op.id,command=''){s.entries[id]={id,seq:++s.seq,at:op.at+delay,html,command,module:current?.iim?.mode?(current.iim.module||'07'):null,target:(op.target==='iim'||(op.kind==='approval'&&(op.status==='approved'||s.iim.mode||s.request?.target==='iim')))?'iim':'terminal',by:op.identity?.discreet?'':op.identity?.characterName||'',byPlayer:op.identity?.discreet?'':op.identity?.playerName||''};const rows=Object.values(s.entries).sort((a,b)=>a.seq-b.seq);for(const row of rows.slice(0,-200))delete s.entries[row.id];}
+  if(op.kind==='dvd-result'){
+   if(s.power.mode!=='on'||!s.power.loginAt||s.power.epoch!==op.epoch||s.dvd?.scanId!==op.scanId||s.dvd?.media!=='scanning'||s.dvd?.tray==='open'||!['empty','error'].includes(op.result))return;
+   s.dvd.media=op.result;s.dvd.resultAt=op.at;
+   append(text(op.result==='empty'?'ERRO DVD-01 // NENHUMA MÍDIA DETECTADA.\nINSIRA UM DISCO E EXECUTE DVD SCAN NOVAMENTE.':'ERRO DVD-02 // NÃO FOI POSSÍVEL DETECTAR A MÍDIA.\nVERIFIQUE O DISCO E TENTE NOVAMENTE.','error'),0,op.id,'DVD SCAN');return s;
+  }
   if(op.kind==='shared-window'){
    if(!['iim','cryptum'].includes(op.app)||s.power.mode!=='on'||!s.power.loginAt||(!s.iim.consoleOpen&&!s.iim.mode)||op.epoch!==s.power.epoch||op.token!==(s.iim.openId||'legacy'))return;
    const patch=op.patch||{},next={};
@@ -125,12 +130,19 @@ window.IROS_IIM_TEXT={"connected":"RESPOSTA DA UNIDADE IIM RECEBIDA.\n\nIDENTIDA
    if(c!=='CLEAR'&&!/^IIM CONNECT /.test(c)){append(text('NENHUM HOSPEDEIRO ACOPLADO.\nUTILIZE HELP PARA CONSULTAR OS COMANDOS DA INTERFACE.','warning'),0,op.id,command);return s;}
   }
   if(c==='CLEAR'){if(op.target){for(const [id,row] of Object.entries(s.entries))if((row.target||'terminal')===op.target)delete s.entries[id];}else s.entries={};append('',0,op.id,command);return s;}
-  if(op.target!=='iim'&&!inIim&&['DVD OPEN','DVD CLOSE','DVD STATUS'].includes(c)){
+  if(op.target!=='iim'&&!inIim&&['DVD OPEN','DVD CLOSE','DVD STATUS','DVD SCAN'].includes(c)){
    const open=c==='DVD OPEN',currentOpen=s.dvd?.tray==='open';
-   if(c==='DVD STATUS'){append(text('LEITOR DVD-ROM // PORTA D:\\\nBANDEJA: '+(currentOpen?'ABERTA':'FECHADA')+'\nDETECÇÃO DE MÍDIA: '+(currentOpen?'AGUARDANDO FECHAMENTO':'PENDENTE / ROTINA NÃO CONFIGURADA')),0,op.id,command);return s;}
+   if(c==='DVD SCAN'){
+    if(currentOpen){append(text('ERRO DVD-03 // BANDEJA ABERTA.\nFECHE O LEITOR COM DVD CLOSE ANTES DA VARREDURA.','error'),0,op.id,command);return s;}
+    if(s.dvd?.media==='scanning'){append(text('DVD-ROM // VARREDURA JÁ EM ANDAMENTO.\nAGUARDANDO RESPOSTA DO LEITOR.','warning'),0,op.id,command);return s;}
+    s.dvd={...s.dvd,tray:'closed',media:'scanning',scanId:op.id,scanAt:op.at,epoch:s.power.epoch};
+    append(text('DVD-ROM // INICIANDO VARREDURA DA MÍDIA...\nCONSULTANDO UNIDADE D:\\\nAGUARDANDO RESPOSTA DO LEITOR.','warning'),0,op.id,command);return s;
+   }
+
+   if(c==='DVD STATUS'){append(text('LEITOR DVD-ROM // PORTA D:\\\nBANDEJA: '+(currentOpen?'ABERTA':'FECHADA')+'\nDETECÇÃO DE MÍDIA: '+(currentOpen?'AGUARDANDO FECHAMENTO':s.dvd?.media==='scanning'?'VARREDURA EM ANDAMENTO':s.dvd?.media==='empty'?'NENHUMA MÍDIA':s.dvd?.media==='error'?'FALHA NA DETECÇÃO':'AGUARDANDO DVD SCAN')),0,op.id,command);return s;}
    if(open===currentOpen){append(text('LEITOR DVD-ROM // A BANDEJA JÁ ESTÁ '+(open?'ABERTA.':'FECHADA.')),0,op.id,command);return s;}
    s.dvd={tray:open?'open':'closed',media:'pending',eventId:op.id,at:op.at,epoch:s.power.epoch};
-   append(text(open?'LEITOR DVD-ROM // BANDEJA ABERTA.\nAGUARDANDO INSERÇÃO DE MÍDIA.':'LEITOR DVD-ROM // BANDEJA FECHADA.\nDETECÇÃO DE MÍDIA: PENDENTE.\nROTINA DE IDENTIFICAÇÃO AINDA NÃO CONFIGURADA.'),0,op.id,command);return s;
+   append(text(open?'LEITOR DVD-ROM // BANDEJA ABERTA.\nAGUARDANDO INSERÇÃO DE MÍDIA.':'LEITOR DVD-ROM // BANDEJA FECHADA.\nEXECUTE DVD SCAN PARA IDENTIFICAR A MÍDIA.'),0,op.id,command);return s;
   }
   let html;
   const mail=channelMessage(command);
