@@ -20,6 +20,7 @@
  const canInteract=()=>entered&&rt.connected&&phase()!=='shutdown'&&!settings.blocked&&!settings.credentialsBlocked;
  window.IROSTable={isController:canInteract,isApplying:()=>false,refresh:()=>{},recordAction,get settings(){return settings}};
  window.addEventListener('iros-media-action',e=>act('media',e.detail).catch(()=>{}));
+ window.addEventListener('iros-recording-action',e=>act('archive-recording',e.detail).catch(()=>{}));
  let lastHistory={text:'',at:0};
  function recordAction(text,committed=false,detail={}){if(!entered||!rt.connected||(!committed&&!canInteract()))return Promise.resolve();const at=rt.now(),value=String(text).slice(0,500);if(!detail.note&&lastHistory.text===value&&at-lastHistory.at<650)return Promise.resolve();lastHistory={text:value,at};return rt.setState('history/'+crypto.randomUUID(),{at,text:value,...detail,playerName:identity.playerName,characterName:identity.characterName,clientId:rt.clientId,authUid:rt.auth?.currentUser?.uid||null}).catch(()=>{});}
  const originalArchive=openArchiveRow;openArchiveRow=function(row){recordAction('ARQUIVO: '+(row.dataset.file==='recovered-song'?'saudade_de_você.wav':row.dataset.file||row.querySelector('button')?.textContent||'NÃO IDENTIFICADO'));return originalArchive(row)};
@@ -34,7 +35,7 @@
  async function act(kind,extra={}){
   if(!canInteract())return;
   const op={kind,id:crypto.randomUUID(),at:rt.now(),clientId:rt.clientId,identity:{...identity,discreet:rt.discreet},...extra};
-  try{let noteChanges=[];const result=await rt.transact('session',s=>{const next=model.reduce(s,op,evaluate);if(kind==='notes')noteChanges=next?window.IROSNotesAudit.changes(s?.notes,extra.patch):[];return next;});if(result){if(kind==='notes')await Promise.all(noteChanges.map(change=>recordAction(change.text,true,{note:change.note})));const action=kind==='media'?'ÁUDIO: saudade_de_você.wav // '+(extra.playing?'REPRODUZIR':'PAUSAR'):kind==='command'?'COMANDO: '+extra.command:({on:'LIGOU O COMPUTADOR',off:'DESLIGOU O COMPUTADOR',restart:'REINICIOU O COMPUTADOR',login:'AUTENTICOU A SESSÃO IROS'})[kind];if(action)recordAction(action,true);}return result;}catch(error){fail(error);throw error}
+  try{let noteChanges=[];const result=await rt.transact('session',s=>{const next=model.reduce(s,op,evaluate);if(kind==='notes')noteChanges=next?window.IROSNotesAudit.changes(s?.notes,extra.patch):[];return next;});if(result){if(kind==='notes')await Promise.all(noteChanges.map(change=>recordAction(change.text,true,{note:change.note})));const action=kind==='archive-recording'?'ÁUDIO: COB_ensaio_60C.wav // '+(extra.playing?'REPRODUZIR':'PAUSAR'):kind==='media'?'ÁUDIO: saudade_de_você.wav // '+(extra.playing?'REPRODUZIR':'PAUSAR'):kind==='command'?'COMANDO: '+extra.command:({on:'LIGOU O COMPUTADOR',off:'DESLIGOU O COMPUTADOR',restart:'REINICIOU O COMPUTADOR',login:'AUTENTICOU A SESSÃO IROS'})[kind];if(action)recordAction(action,true);}return result;}catch(error){fail(error);throw error}
  }
  function clean(html){const t=document.createElement('template');t.innerHTML=String(html||'').replaceAll('FONTE: FICHA DISCORD / SINCRONIZADA','FONTE: REGISTRO BIOMÉTRICO / SINCRONIZADO').replaceAll('FONTE: FICHA DISCORD / LEITURA INDISPONÍVEL','FONTE: REGISTRO BIOMÉTRICO / LEITURA INDISPONÍVEL').replaceAll('consultar os atributos da ficha','consultar os parâmetros corporais');t.content.querySelectorAll('script,iframe,object,embed,style,link,audio,video').forEach(n=>n.remove());for(const el of t.content.querySelectorAll('*'))for(const a of [...el.attributes])if(a.name.startsWith('on')||a.name==='srcdoc'||/^(?:javascript|data):/i.test(a.value))el.removeAttribute(a.name);t.content.querySelectorAll('.terminal-response').forEach(n=>n.dataset.revealed='true');return t.content;}
  function phase(){const p=power||session?.power;if(p?.shutdownAt&&rt.now()<p.shutdownAt+p.shutdownMs)return'shutdown';if(!p||p.mode==='off')return'off';const age=rt.now()-p.at;if(age<p.postMs)return'post';if(age<p.postMs+p.splashMs+420)return'splash';if(!p.loginAt)return'login';return rt.now()<p.loginAt+4000?'boot':'desktop';}
@@ -60,7 +61,7 @@
   else if(p&&stage==='login'){audio=loginAudio;at=p.at+p.postMs+p.splashMs+420;volume=.58;}
   else if(p&&stage==='desktop'){
    const start=p.loginAt+4000,duration=Number.isFinite(jingleAudio.duration)?jingleAudio.duration*1000:5000;
-   if(rt.now()<start+duration){audio=jingleAudio;at=start;volume=.72;}else{audio=interfaceAudio;at=start+duration;volume=window.IROSRecoveredMusicPlaying ? .08 : .32;}
+   if(rt.now()<start+duration){audio=jingleAudio;at=start;volume=.72;}else{audio=interfaceAudio;at=start+duration;volume=(window.IROSRecoveredMusicPlaying||window.IROSArchiveRecordingPlaying) ? .08 : .32;}
   }
   if((!musicEnabled||window.IROSMasterMusicMuted)&&['login','desktop'].includes(stage)){audio=stage==='desktop'?computerLoopAudio:null;at=p?.loginAt||0;volume=.075;}
   if(!audioEnabled)audio=null;
@@ -93,7 +94,8 @@
  }
  function tick(){
   if(!entered||!session)return;renderPower();const stage=phase();
-  const media=session.media,mediaElapsed=media?Math.max(0,(rt.now()-media.at)/1000):0,mediaActive=stage==='desktop'&&media?.playing&&rt.now()>=media.at&&(media.position||0)+mediaElapsed<32.5;mediaNotice.hidden=!mediaActive;if(mediaActive){const name=media.byPlayer||media.by||'sessão remota',text='saudade_de_você.wav está sendo tocado por '+name;if(mediaNotice.textContent!==text)mediaNotice.textContent=text;}
+  const playingMedia=[{media:session.recording,file:'COB_ensaio_60C.wav',duration:35.736},{media:session.media,file:'saudade_de_você.wav',duration:32.5}].find(({media,duration})=>stage==='desktop'&&media?.playing&&rt.now()>=media.at&&(media.position||0)+Math.max(0,(rt.now()-media.at)/1000)<duration);
+  mediaNotice.hidden=!playingMedia;if(playingMedia){const {media,file}=playingMedia,name=media.byPlayer||media.by||'sessão remota',text=file+' está sendo tocado por '+name;if(mediaNotice.textContent!==text)mediaNotice.textContent=text;}
   const notesHash=JSON.stringify(session.notes||{});if(notesHash!==lastNotes){lastNotes=notesHash;const active=irosNotes.find(n=>n.id===activeNoteId),dirty=active&&(pendingNoteWrites.has(active.id)||noteText.value!==active.text||normalizeNoteTitle(noteTitle.value)!==active.title);noteBaseline=JSON.parse(notesHash);if(session.notes){irosNotes=Object.values(session.notes);if(dirty){irosNotes=irosNotes.filter(n=>n.id!==active.id);irosNotes.push(active);}if(!irosNotes.some(n=>n.id===activeNoteId))activeNoteId=irosNotes[0]?.id||null;renderIrosNotes();if(!dirty)loadActiveNote();}}
   Object.assign(iimState,{mode:!!session.iim?.mode&&cable,module:session.iim?.mode&&cable?(session.iim.module||'07'):null,ocularActive:!!session.iim?.ocular,connecting:false});window.IROSIIMConsole?.sync(session.iim,cable);setIimInterface(iimState.mode);input.disabled=false;
   if(stage!=='desktop')return;

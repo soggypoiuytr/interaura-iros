@@ -1,0 +1,5 @@
+'use strict';
+const fs=require('node:fs'),path=require('node:path'),zlib=require('node:zlib'),crypto=require('node:crypto');
+const root=path.resolve(__dirname,'../..'),source=path.join(root,'.github/media-source/mod60'),manifest=JSON.parse(fs.readFileSync(path.join(source,'manifest.json'),'utf8'));
+if(manifest.format!=='gzip-base64-parts-v1')throw Error('Unsupported media package');
+for(const entry of manifest.entries){const target=path.resolve(root,entry.path);if(!target.startsWith(path.join(root,'site')+path.sep))throw Error('Invalid media output path');const packed=Buffer.concat(entry.parts.map(name=>{if(!/^[a-z]+\.\d{3}\.b64$/.test(name))throw Error('Invalid media part');return Buffer.from(fs.readFileSync(path.join(source,name),'utf8').trim(),'base64');}));const data=zlib.gunzipSync(packed);if(data.length!==entry.bytes||crypto.createHash('sha256').update(data).digest('hex')!==entry.sha256)throw Error('Media integrity failed: '+entry.path);if(!process.argv.includes('--check')){fs.mkdirSync(path.dirname(target),{recursive:true});fs.writeFileSync(target,data);}console.log('PASS: '+entry.path+' ('+data.length+' bytes, SHA-256 verified)');}

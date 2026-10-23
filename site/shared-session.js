@@ -56,14 +56,19 @@ window.IROS_IIM_TEXT={"connected":"RESPOSTA DA UNIDADE IIM RECEBIDA.\n\nIDENTIDA
    s.chatSelfMessages ||= {};s.chatSelfMessages[op.id]={text:op.text.trim(),at:op.at};
    const messages=Object.entries(s.chatSelfMessages).sort((a,b)=>a[1].at-b[1].at||a[0].localeCompare(b[0]));for(const [id] of messages.slice(0,-200))delete s.chatSelfMessages[id];return s;
   }
-  if(op.kind==='media'){if(s.power.mode!=='on'||!s.power.loginAt)return;s.media={playing:!!op.playing,position:Math.max(0,Math.min(32.5,Number(op.position)||0)),at:op.at,by:op.identity?.discreet?'':op.identity?.characterName||'',byPlayer:op.identity?.discreet?'':op.identity?.playerName||''};return s;}
+  if(op.kind==='archive-recording'){
+   if(s.power.mode!=='on'||!s.power.loginAt||op.file!=='mod60-recording'||!Number.isFinite(op.at)||!Number.isFinite(op.position))return;
+   if(op.playing&&s.media?.playing)s.media={...s.media,playing:false,position:Math.min(32.5,s.media.position+Math.max(0,(op.at-s.media.at)/1000)),at:op.at};
+   s.recording={file:'mod60-recording',playing:!!op.playing,position:Math.max(0,Math.min(35.736,op.position)),at:op.at,by:op.identity?.discreet?'':op.identity?.characterName||'',byPlayer:op.identity?.discreet?'':op.identity?.playerName||''};return s;
+  }
+  if(op.kind==='media'){if(s.power.mode!=='on'||!s.power.loginAt)return;if(op.playing&&s.recording?.playing)s.recording={...s.recording,playing:false,position:Math.min(35.736,s.recording.position+Math.max(0,(op.at-s.recording.at)/1000)),at:op.at};s.media={playing:!!op.playing,position:Math.max(0,Math.min(32.5,Number(op.position)||0)),at:op.at,by:op.identity?.discreet?'':op.identity?.characterName||'',byPlayer:op.identity?.discreet?'':op.identity?.playerName||''};return s;}
   if(['on','off','restart'].includes(op.kind)){
    if(op.kind==='on'&&s.power.mode!=='off')return;
    if(op.kind!=='off'){s.entries={};s.recover=0;}
    const shutdownMs=op.kind==='on'?0:Math.max(3500,Math.min(30000,op.shutdownMs||6500));
    const revision=(s.power.revision||0)+1;
    s.power={revision,mode:op.kind==='off'?'off':'on',epoch:op.id,at:op.at+(op.kind==='restart'?shutdownMs:0),postMs:op.postMs||7600,splashMs:op.splashMs||5200,shutdownAt:op.kind==='on'?0:op.at,shutdownMs};
-   s.iim={mode:false,ocular:false};delete s.sharedWindows;delete s.sharedWindowFocus;delete s.cryptum;delete s.media;delete s.internalChatConnection;delete s.request;return s;
+   s.iim={mode:false,ocular:false};delete s.sharedWindows;delete s.sharedWindowFocus;delete s.cryptum;delete s.media;delete s.recording;delete s.internalChatConnection;delete s.request;return s;
   }
   if(op.kind==='login'){if(s.power.mode!=='on'||s.power.loginAt)return;s.power.loginAt=op.at;return s;}
   if(op.kind==='cable-off'){for(const [id,row] of Object.entries(s.entries))if(row.sampleJob&&row.at>op.at)delete s.entries[id];s.iim={mode:false,ocular:false};delete s.sharedWindows;delete s.sharedWindowFocus;delete s.cryptum;delete s.request;return s;}
