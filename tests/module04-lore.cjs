@@ -23,7 +23,7 @@ assert(record19.psych.includes('gritos'));assert(record19.psych.includes('não p
 assert(source.includes('name:'+String.fromCharCode(39)+'DRA. MIREILLE VAUTRIN'));assert(!record19.add.includes('SUPERVISÃO CIENTÍFICA'));assert(!record19.add.includes('VÍNCULO CONTEMPLADOR'));assert(record19.add.includes('MOD-35'));assert(record19.add.includes('não comunicar a suspeita como fato confirmado'));
 for(const command of ['MODULE 19','MOD 19','MOD-19','MÓDULO-19']){const result=ctx.terminalAnswer(command);assert(result.includes(record19.classe));assert(result.includes('CONTEMPLADOR: INCERTO'));assert(!result.includes('AINDA EM RECUPERAÇÃO'));}
 for(const command of ['CELL 19','SCAN 19']){const result=ctx.terminalAnswer(command);assert(result.includes('HISTÓRICO')||result.includes('HISTÓRICOS'));assert(!result.includes('MÓDULO-04'));}
-assert(ctx.terminalAnswer('STATUS').includes('10 DISPONÍVEIS / 4 EM RECUPERAÇÃO'));
+assert(ctx.terminalAnswer('STATUS').includes('10 DISPONÍVEIS / 6 EM RECUPERAÇÃO'));
 const gallerySource=source.slice(source.indexOf('const showModuleBefore04Gallery='),source.indexOf('const renderModuleRecord='));
 for(const id of [4]){
  const timers=[],image={classList:{remove(){},add(){}},offsetWidth:1},caption={setAttribute(){}},figure={querySelector:selector=>selector==='img'?image:caption,append:node=>figure.controls=node};

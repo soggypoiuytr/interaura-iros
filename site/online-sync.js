@@ -62,13 +62,14 @@
    const start=p.loginAt+4000,duration=Number.isFinite(jingleAudio.duration)?jingleAudio.duration*1000:5000;
    if(rt.now()<start+duration){audio=jingleAudio;at=start;volume=.72;}else{audio=interfaceAudio;at=start+duration;volume=window.IROSRecoveredMusicPlaying ? .08 : .32;}
   }
-  if(!musicEnabled&&['login','desktop'].includes(stage)){audio=stage==='desktop'?computerLoopAudio:null;at=p?.loginAt||0;volume=.075;}
+  if((!musicEnabled||window.IROSMasterMusicMuted)&&['login','desktop'].includes(stage)){audio=stage==='desktop'?computerLoopAudio:null;at=p?.loginAt||0;volume=.075;}
   if(!audioEnabled)audio=null;
   for(const track of tracks)if(track!==audio&&!track.paused)track.pause();
   if(!audio)return;applyAudioVolume(audio,volume);
   let position=Math.max(0,(rt.now()-at)/1000);if(Number.isFinite(audio.duration)&&audio.duration>0){if(audio.loop)position%=audio.duration;if(position>=audio.duration){audio.pause();return}}if(force||Math.abs(audio.currentTime-position)>.45){try{audio.currentTime=position}catch{}}
   if(audio.paused)audio.play().catch(()=>{});
  }
+ window.addEventListener('iros-music-control',()=>musicTick());
  for(const audio of tracks)audio.addEventListener('loadedmetadata',()=>musicTick(true));
  function renderPower(){
   if(!entered||!power)return;

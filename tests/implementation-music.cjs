@@ -1,7 +1,7 @@
 const fs=require('fs'),vm=require('vm'),assert=require('assert/strict');
 (async()=>{
- let now=1000,receive,tick;const audio=()=>({dataset:{baseVolume:'.32'},volume:.032,paused:true});
- const c={console,implementationMusicGain:1,masterVolume:.1,loginAudio:audio(),jingleAudio:audio(),interfaceAudio:audio(),setInterval:fn=>{tick=fn;return 1},clearInterval(){},window:{InterauraRealtime:{now:()=>now,init:async()=>{},onState:(key,fn)=>receive=fn,getState:async()=>null}}};
+ let now=1000,receive,tick;const listeners={};const audio=()=>({dataset:{baseVolume:'.32'},volume:.032,paused:true});
+ const c={musicEnabled:false,setAudioUI(){},console,implementationMusicGain:1,masterVolume:.1,loginAudio:audio(),jingleAudio:audio(),interfaceAudio:audio(),setInterval:fn=>{tick=fn;return 1},clearInterval(){},Event:class{constructor(type){this.type=type}},window:{dispatchEvent(){},InterauraRealtime:{now:()=>now,init:async()=>{},onState:(key,fn)=>{listeners[key]=fn;if(key==='session')receive=fn},getState:async()=>null}}};
  vm.createContext(c);vm.runInContext(fs.readFileSync('site/implementation-music.js','utf8'),c);await new Promise(resolve=>setImmediate(resolve));
  const state={power:{mode:'on',loginAt:1},cryptum:{status:'implementing',finishAt:15000}};
  receive(state);assert.equal(c.interfaceAudio.volume,0);assert.equal(c.implementationMusicGain,0);
@@ -10,6 +10,12 @@ const fs=require('fs'),vm=require('vm'),assert=require('assert/strict');
  c.masterVolume=.5;tick();assert.equal(c.interfaceAudio.volume,.08);
  now=19000;tick();assert.equal(c.implementationMusicGain,1);assert.equal(c.interfaceAudio.volume,.16);assert(c.interfaceAudio.paused,'never overrides playback or enables disabled music');
  now=1000;state.cryptum.status='implementing';receive(state);assert.equal(c.interfaceAudio.volume,0);receive({power:{mode:'off'}});assert.equal(c.implementationMusicGain,1);
+ now=20000;listeners.settings({ambientMusic:{muted:true,at:20000,from:1}});assert.equal(c.musicEnabled,true);
+ now=21500;tick();assert.equal(c.implementationMusicGain,.5);
+ now=23000;tick();assert.equal(c.implementationMusicGain,0);assert.equal(c.window.IROSMasterMusicMuted,true);
+ listeners.settings({ambientMusic:{muted:false,at:23000,from:0}});assert.equal(c.window.IROSMasterMusicMuted,false);
+ now=24500;tick();assert.equal(c.implementationMusicGain,.5);now=26000;tick();assert.equal(c.implementationMusicGain,1);
+ console.log('PASS: controle do mestre ativa música na prévia, fade de três segundos e ambiente ao silenciar.');
  const code=fs.readFileSync('site/index.html','utf8');assert(code.includes('adjustedBase*masterVolume*([loginAudio,jingleAudio,interfaceAudio].includes(audio)?implementationMusicGain:1)'));
  console.log('PASS: música silenciada na implementação, retorno gradual em quatro segundos pelo relógio compartilhado, volume atual respeitado e música desativada preservada.');
 })().catch(error=>{console.error(error);process.exitCode=1});

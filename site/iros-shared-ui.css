@@ -40,16 +40,16 @@
 .iros-iim-link.announcing .iros-remote-tooltip{display:none}
 .iros-iim-link.announcing:hover .iros-remote-tooltip,.iros-iim-link.announcing:focus .iros-remote-tooltip{display:block}
 .iros-iim-link .iros-remote-tooltip{right:calc(50% - 25px)}
-.iros-tray-balloon{position:fixed;z-index:11000;width:min(285px,calc(100vw - 16px));padding-right:30px;animation:iros-balloon-arrival .18s ease-out}
+.iros-tray-balloon{position:fixed;z-index:11000;width:min(285px,calc(100vw - 16px));padding-right:30px;animation:iros-balloon-arrival .6s steps(1,end) both}
 .iros-tray-balloon::after{content:"";position:absolute;left:var(--balloon-tail,240px);bottom:-9px;width:15px;height:15px;background:#ffffdf;border-right:1px solid #53594d;border-bottom:1px solid #53594d;transform:translateX(-50%) skewY(35deg)}
 .iros-tray-balloon strong{display:block;font-size:11px}.iros-tray-balloon p{margin:5px 0 0}.iros-tray-balloon button{position:absolute;right:5px;top:4px;width:17px;height:17px;border:1px solid #c6c9a9;border-radius:3px;background:transparent;color:#73795e;padding:0;font:14px/14px Arial;cursor:pointer}
-@keyframes iros-balloon-arrival{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:none}}
+@keyframes iros-balloon-arrival{0%,12%{opacity:0;transform:translateY(18px)}13%,29%{opacity:1;transform:translateY(12px)}30%,46%{transform:translateY(7px)}47%,65%{transform:translateY(4px)}66%,84%{transform:translateY(2px)}85%,100%{opacity:1;transform:none}}
 @media(prefers-reduced-motion:reduce){.iros-tray-balloon,.presence-button.announcing{animation:none}}
 
 #iros-start-menu .menu-pixel-icon{background-size:84px 84px}#iros-start-menu .network{background-position:0 0}#iros-start-menu .files{background-position:-28px 0}#iros-start-menu .terminal{background-position:-56px 0}#iros-start-menu .camera{background-position:0 -28px}#iros-start-menu .notes{background-position:-28px -28px}#iros-start-menu .mine{background-position:-56px -28px}#iros-start-menu .solitaire{background-position:0 -56px}#iros-start-menu .system{background-position:-28px -56px}
 .iros-quick-launch .iros-pixel-icon{background-size:72px 72px}.iros-quick-launch .iros-pixel-icon.network{background-position:0 0}.iros-quick-launch .iros-pixel-icon.files{background-position:-24px 0}.iros-quick-launch .iros-pixel-icon.notes{background-position:-24px -24px}.iros-quick-launch .iros-pixel-icon.terminal{background-position:-48px 0}
 
-.iros-tray-balloon.leaving{animation:iros-balloon-leave .14s ease-in forwards;pointer-events:none}@keyframes iros-balloon-leave{from{opacity:1;transform:none}to{opacity:0;transform:translateY(3px)}}@media(prefers-reduced-motion:reduce){.iros-tray-balloon.leaving{animation:none;opacity:0}}
+.iros-tray-balloon.leaving{animation:iros-balloon-leave .3s steps(3,end) forwards;pointer-events:none}@keyframes iros-balloon-leave{from{opacity:1;transform:none}to{opacity:0;transform:translateY(3px)}}@media(prefers-reduced-motion:reduce){.iros-tray-balloon.leaving{animation:none;opacity:0}}
 
 .audit-entry.audit-master{background:#241c35;border-color:#68527e;border-left:4px solid #c5a2f2}.audit-master .audit-meta b,.audit-master .audit-action{color:#eadbff}.audit-master .audit-player,.audit-master .audit-meta time{color:#c3afd9}.audit-master .audit-icon{background:#c6b6da;border-color:#e9dcf7}.audit-master .audit-meta b::after{content:"MESTRE";display:inline-block;margin-left:8px;padding:1px 5px;border:1px solid #aa85ce;border-radius:2px;background:#49305e;color:#f0e4ff;font:700 9px/1.4 Tahoma,Arial,sans-serif;letter-spacing:.04em}
 
@@ -99,3 +99,12 @@ body.desktop-mode .iros-app-window.processing-enter,body.desktop-mode #app-conte
 .iros-app-window>.iros-titlebar>.iros-titlebar-title{min-width:0;flex:1 1 auto;max-width:none;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
 .iros-app-window>.iros-titlebar>.iros-program-users{position:static;inset:auto;transform:none;flex:0 1 auto;max-width:34%;min-width:0;margin-left:auto;padding:0 3px;border:0;background:#10271ebf;color:#b3cdbf;font:8px/1.2 "Courier New",monospace;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .iros-app-window>.iros-titlebar>.iros-window-controls{flex:0 0 auto;}
+/* Uniform tray slots keep every symbol centered on the same baseline. */
+.iros-tray{display:flex;align-items:center;gap:4px}
+.iros-tray>.messenger-tray,.iros-tray>.iros-iim-link,.iros-tray>.iros-remote-link{box-sizing:border-box;flex:0 0 28px;width:28px;height:26px;min-width:28px;padding:0;border:0;align-items:center;justify-content:center}
+.iros-tray>.messenger-tray:hover,.iros-tray>.messenger-tray:focus-visible{border:0}
+.iros-tray>.messenger-tray>img,.iros-tray>.iros-iim-link>img{width:24px;height:24px;margin:0;display:block}
+.iros-tray>.iros-remote-link>.iros-pixel-icon{margin:0}
+.iros-tray>.iros-presence{height:26px;flex:0 0 auto}
+.iros-tray .presence-button{height:26px;gap:3px;padding:0 2px}
+.iros-tray>.iros-clock{display:flex;align-items:center;align-self:stretch;padding:0 5px;margin-left:2px}

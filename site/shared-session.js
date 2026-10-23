@@ -125,6 +125,13 @@ window.IROS_IIM_TEXT={"connected":"RESPOSTA DA UNIDADE IIM RECEBIDA.\n\nIDENTIDA
    if(c!=='CLEAR'&&!/^IIM CONNECT /.test(c)){append(text('NENHUM HOSPEDEIRO ACOPLADO.\nUTILIZE HELP PARA CONSULTAR OS COMANDOS DA INTERFACE.','warning'),0,op.id,command);return s;}
   }
   if(c==='CLEAR'){if(op.target){for(const [id,row] of Object.entries(s.entries))if((row.target||'terminal')===op.target)delete s.entries[id];}else s.entries={};append('',0,op.id,command);return s;}
+  if(op.target!=='iim'&&!inIim&&['DVD OPEN','DVD CLOSE','DVD STATUS'].includes(c)){
+   const open=c==='DVD OPEN',currentOpen=s.dvd?.tray==='open';
+   if(c==='DVD STATUS'){append(text('LEITOR DVD-ROM // PORTA D:\\\nBANDEJA: '+(currentOpen?'ABERTA':'FECHADA')+'\nDETECÇÃO DE MÍDIA: '+(currentOpen?'AGUARDANDO FECHAMENTO':'PENDENTE / ROTINA NÃO CONFIGURADA')),0,op.id,command);return s;}
+   if(open===currentOpen){append(text('LEITOR DVD-ROM // A BANDEJA JÁ ESTÁ '+(open?'ABERTA.':'FECHADA.')),0,op.id,command);return s;}
+   s.dvd={tray:open?'open':'closed',media:'pending',eventId:op.id,at:op.at,epoch:s.power.epoch};
+   append(text(open?'LEITOR DVD-ROM // BANDEJA ABERTA.\nAGUARDANDO INSERÇÃO DE MÍDIA.':'LEITOR DVD-ROM // BANDEJA FECHADA.\nDETECÇÃO DE MÍDIA: PENDENTE.\nROTINA DE IDENTIFICAÇÃO AINDA NÃO CONFIGURADA.'),0,op.id,command);return s;
+  }
   let html;
   const mail=channelMessage(command);
   if(mail){

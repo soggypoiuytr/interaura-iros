@@ -61,7 +61,7 @@
 
 .iros-tray-balloon.messenger-connected-balloon{z-index:11000}.messenger-connected-balloon p{white-space:pre-line}
 
-.messenger-tray.announcing{animation:iim-tray-announce .34s steps(2) infinite}.messenger-tray.announcing>img{animation:none}.iros-tray-balloon.messenger-connected-balloon{animation:iim-tooltip-arrival .28s steps(2) 2}
+.messenger-tray.announcing{animation:iim-tray-announce .34s steps(2) infinite}.messenger-tray.announcing>img{animation:none}
 @media(prefers-reduced-motion:reduce){.messenger-tray.announcing,.iros-tray-balloon.messenger-connected-balloon{animation:none}}
 
 .messenger-tray{cursor:help}.messenger-tray>.iros-remote-tooltip{white-space:pre-line;right:calc(50% - 25px)}.messenger-tray:hover>.iros-remote-tooltip,.messenger-tray:focus-visible>.iros-remote-tooltip{display:block}
